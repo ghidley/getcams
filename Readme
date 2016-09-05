@@ -1,0 +1,13 @@
+Design Goals
+Replicates archive*'s getcamsXXXanimations + c1's updatedanimations functionality initially (populating c1:/Data/archive, while disabling archive* scp's and ssh's to c1)
+Could at some point also populate wfe camera web site (displacing archive*)
+Provide alternate timing mechanism not dependent on cron ... drive via boot startup
+ 
+Design Phases
+DONE: Use prefetched image for initial POC for mobo cam ... embed args in program
+DONE: Add lookup of security info from protected file 
+DONE: Convert to use boot driven run_cameras - getcams-xxx.pl invocation
+DONE: When private network is accessible, use in program fetch of cam image
+Test timing and functionality ...
+When available, use fetch proxie
+

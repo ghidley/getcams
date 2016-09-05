@@ -1,0 +1,301 @@
+#!/bin/bash 
+version="v083016"
+#
+# Managed by systemctl start/stop/restart when in production mode:
+#	Start=/home/hpwren/bin/run_cameras -I
+#	ExecStop=/home/hpwren/bin/run_cameras -X
+# Will be invoked at boot once "systemctl enable getcams" is run, from:
+#	/etc/systemd/system/multi-user.target.wants/getcams.service
+# Other options include -d (parent debug) and -D (parent and child debug)
+# Service control options added: -X to stop, -R to restart, -I to start (initialy at boot)
+# Can also contro running process by adding KILLALL or HALT as special camname keyword to cam_params
+#    HALT removes the run_cameras lockfile and halts the run_cameras process (leaves getcams* running)
+#    KILLALL terminates all camera fetch processes (getcams*), removes all lockfiles and then halts the run_cameras process
+#
+# run_cameras:
+# Starts fetching images from all enabled cameras
+# Reads camera parameters from cam_params:
+#    NAME:PROGRAM:TYPE:STARTUP_DELAY:LABEL:RUN_ONCE:CAPTURES/MINUTE
+#    hpwren-iqeye7:getcams-iqeye.pl:c:2:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
+#    smer-tcs3-mobo:getcams-mobo.pl:c:3:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c1":1:1
+#    KILLALL: Special case to terminate all running camera fetch process and run_cameras (this program)
+#    HALT: Special case to terminate run_cameras script (this program)
+#
+# Locks self using $epath/lockfiles/RUNCAM_PID 
+# Locks children using $epath/lockfiles/$getcams-xxx.lock
+# Logs debug info to stdout
+# Logs to $epath/runcamlog: KILLALLs, HALTs, and getcam invocations 
+# Logs to /var/log/messages (via logger, syslog) upon signal trap or exit:
+#	getcams_xxx[pid] was terminated: -- restart with  \"run_cameras -I\" if needed"
+#
+# Overall logic:
+# while true 
+#   while read cam_params (e.g. for each camera entry ...)
+#     if first time through loop or if cam_params changed since last reading
+#       Kill any running fetches (getcams-???'s), remove their  lockfiles ... and fall through to [re]Exec below
+#     else (in monitoring mode)
+#       if cam fetch process running, continue (skip) to next cam fi, ... otherwise
+#       Remove any leftover lockfiles and fall through to [re]exec fetch
+#     fi
+#     [Re-]exec camera fetch
+#   done while read cam_params
+# done
+#
+# Above while loops also manage special case cam keywords of HALT and KILLALL
+
+HOME="/home/hpwren"
+export HOME
+PATH="$HOME/bin:$PATH"
+export PATH
+
+epath="$HOME/bin"
+log="$epath/logfiles/runcamlog"
+params="$epath/cam_params"
+access="$epath/cam_access"
+lockfiles="$epath/lockfiles"
+LOCK="$lockfiles/RUNCAM_PID"
+
+KILLALL="KILLALL"
+HALT="HALT"
+INITIAL=false
+RESTART=false
+STOP=false
+
+cam_param_date=`stat  --printf %Y $params`
+cam_access_date=`stat --printf %Y $access`
+tstamp=`date +"%Y%m%d.%H%M%S"`
+
+# DEBUGGING PARAMETERS ... fix for production! ... referrenced in lines with xxx
+runs=3		#xxx For debug only, run n iterations ...
+rescan_delay=15  #xxx Adjust for production, maybe 600 seconds ???
+
+cam_delay=1  #Delay between reading each line of cam_params (and checking or restarting getcams-xxx processes)
+
+first_loop=true	# Enable first time through loop logic, killing, if needed, and [re]starting all cam fetch processes
+i=0
+
+printf "$tstamp: $(basename $0)[$$]: Starting $(basename $0) $@ ..." >> $log
+printf "\n" >> $log
+logger -p notice -- "$(basename $0)[$$] was started: $@"
+
+while getopts "vxdDIXR" opt; do
+    case "$opt" in
+    v) set -v
+        ;;
+    x) set -x
+        ;;
+    d)  DBG=1
+        ;;
+    D)  DBG=1
+	export DBG
+        ;;
+    I)  INITIAL=true
+        ;;
+    R)  INITIAL=true
+	RESTART=true
+        ;;
+    X)  STOP=true
+        ;;
+    esac
+done
+
+#Redefine echo for debugging ... enabled or suppressed based on DBG status
+echo () {
+	[[ "$DBG" ]] && builtin echo $@
+}
+
+### Processing to support deamon mode controls: "systemctl status|start|restart|stop getcams"
+# start: invoked via run_cameras -I, no special treatment needed here
+# stop: invoked via runcams -X, need to
+#	1) kill PID in LOCK and remove LOCK
+#	2) kill off all getcams
+#	3) exit
+# restart: invoked via runcams -R, need to
+#	1) kill PID in LOCK and remove LOCK
+#	2) kill off all getcams
+#	3) continue as if invoked run_cameras -I
+#
+if [[ "$RESTART" = true ]] || [[ "$STOP" = true ]] ; 
+then
+	if [ -f "$LOCK" ] ;  #if script lockfile exists then 
+	then
+		pid=`cat $LOCK`
+		printf "Lockfile exists [$pid] (ls -ldg $LOCK)\n" 
+		printf "Killing PID $pid and removing lockfile\n"
+		kill $pid  #kill process, remove lockfile and fall through to exit
+		#kill $pid &> /dev/null #kill process, remove lockfile and fall through to exit
+		rm -f "$LOCK" # In case any is left over
+	fi
+	#terminate any running getcams*
+	for f in $lockfiles/*.lock
+	do
+		[ -e "${f}" ] || continue
+		kpid=(cat ${f})
+		kill $kpid &> /dev/null #kill process, remove lockfile and fall through to exit
+		rm -f ${f}
+		printf "Killed proc $pid and removed old lockfile ${f}\n"
+	done
+	if [[ "$STOP" = true ]] ; 
+	then
+		printf "Exiting\n"
+		logger -p notice -- "$(basename $0)[$kpid] service stopped"
+		exit 0
+	else
+		logger -p notice -- "$(basename $0)[$$] service restarted"
+
+	fi #if STOP, otherwise fall through to run_cameras -I
+fi #if RESTART or STOP ...  
+###
+
+finish() {
+	rm -f "$LOCK"
+	echo "Trapped signal or exit, removed lockfile $LOCK and exiting"
+	logger -p notice -- "$(basename $0)[$$] was terminated: -- restart with  \"run_cameras -I\" if needed"
+	exit
+}
+
+# Manage master lockfile directory
+[ -e $lockfiles ] || mkdir $lockfiles 
+
+if [ -f "$LOCK" ] ;  #if script lockfile exists then 
+then
+	if [[ "$INITIAL" = true ]] ; 
+	then
+		rm -f "$LOCK" # In case any is left over
+	else
+		pid=`cat $LOCK`
+		printf "Lockfile exists [$pid] (ls -ldg $LOCK)\n" 
+		printf "Add KILLALL or HALT to $params to shutdown cleanly\n"
+		exit 0
+	fi
+fi
+echo "Run_cameras $version writing $$ to $LOCK"
+builtin echo "$$" > "$LOCK"
+
+trap 'finish $LINENO $BASH_COMMAND' EXIT 1 2 3 6
+
+while [ true ]  
+do
+	((i++))
+	echo
+	echo "Run_cameras Loop $i"
+
+	#Fetch camera paramaters from "cam_params" for every enabled camera
+	# Format:
+	#	NAME:PROGRAM:TYPE:DELAY:LABEL:RUN_ONCE:CAPTURES/MINUTE
+	#	hpwren-iqeye7:getcams-iqeye.pl:c:2:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
+	#	smer-tcs3-mobo:getcams-mobo.pl:c:3:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c1":1:1
+	#
+	# Note: RUN_ONCE=0 keeps getcams-xxx  running indefinitely, restarting as needed if getcams-xxx exits 
+	# Note: RUN_ONCE=1 runs getcams-xxx one time only, which results in one 1 minute camera fetch cycle of CAPTURES/MINUTE image fetches
+
+
+	while  IFS=: read -a line	#Camera fetch execution inner loop ... rereads cam_params each time through allowing run time changes
+	do
+		if [[ ${line[0]:0:1} == "#" ]];
+		then
+			continue    #Skip lines that are commented out 
+		fi
+		echo "Processing: ${line[*]}"
+		cam=${line[0]}
+		prog=${line[1]}
+		camtype=${line[2]}
+		delay=${line[3]}
+		label=${line[4]}
+		run_once=${line[5]}
+		cpm=${line[6]}
+		tstamp=`date +"%Y%m%d.%H%M%S"`
+		# Special case for stopping all cams and for terminating run_cameras
+		case $cam in
+			$KILLALL )
+				for f in $lockfiles/*.lock
+				do
+					[ -e "${f}" ] || continue
+					kpid=(cat ${f})
+					kill $kpid &> /dev/null #kill process, remove lockfile and fall through to exit
+					rm -f ${f}
+					echo "Killed proc $pid and removed old lockfile ${f}"
+				done
+				echo  "$0: Exiting after terminating all camera fetch processes ..." 
+				printf "\n$0:$tstamp: KILLALL: Exiting after terminating all camera fetch processes ...\n" >> $log
+				echo "REMOVE KILLALL FROM $params \! ..."
+				logger -p notice -- "$(basename $0)[$$] Killed from paramter file KILLALL directive"
+				#rm -f "$LOCK" Removed in trap
+                                exit 0
+				;;
+			$HALT )
+				printf "\n$0:$tstamp: HALT: Shutting down run_cameras, leaving existing fetch processes running\n" >> $log
+				echo  "Exiting upon HALT command ..."
+				echo "REMOVE HALT FROM $params BEFORE RESTARTING \! ..." 
+				logger -p notice -- "$(basename $0)[$$] Halted from paramter file HALT directive"
+				#rm -f "$LOCK" Removed in trap
+				exit 0
+				;;
+		esac
+
+		if [[ "$first_loop" = false ]] ;  #Already completed startup, not first time through camera loop
+		then
+			echo "In monitoring loop ... cam is $cam ... run_once is $run_once"
+			if [[ "$run_once" = "1" ]] ; then continue ; fi   #Run_once execution was already initiated the first time through loop, skip to next cam
+		fi
+
+		# if lockfile exists, and process is not running, send kill and remove lockfile
+		running=false
+		if [ -f  "$lockfiles/$cam-$camtype.lock" ] ; then 
+			echo "Lockfile exists - `ls -ldg $lockfiles/$cam-$camtype.lock`" 
+			pid=`cat $lockfiles/$cam-$camtype.lock`
+			if [ -e /proc/$pid ] ; then running=true ; fi
+			# Previously used: kill -0  $pid &> /dev/null ; #killed=$?
+			if [[ "$first_loop" = false ]] ;  #Already completed startup, not first time through camera loop ... now in monitoring mode ... restart only if needed
+			then
+				#if fetch process still running, skip to next cam, otherwise remove lockfile and restart cam fetch process again
+				if [[  "$running" = true ]] ; then continue ; fi
+			fi
+			# Note: first_loop also reset to true if the cam_params or cam_access file changes ... this forces falling through 
+			# to this code to do a restart of all camera fetches
+			if [[ "$running" = true ]] ; then kill $pid &> /dev/null  ; fi #kill leftover process if running
+			# remove lockfile and fall through to restart cam fetch
+			rm -f $lockfiles/$cam-$camtype.lock
+			echo "Killed proc $pid and removed old $lockfiles/$cam-$camtype.lock"
+		fi
+
+		# If we got here, leftover lock files have been removed and we now need to restart the camera fetch process 
+		echo "Starting $epath/$prog $cam $camtype $delay $label $run_once $cpm"
+tstamp=`date +"%Y%m%d.%H%M%S"`
+		printf "$tstamp: $(basename $0)[$$]: Starting $epath/$prog $cam $camtype $delay $label $run_once $cpm\n" >> $log
+		$epath/$prog $cam $camtype $delay "$label" $run_once $cpm & lockpid=$!
+		echo "Writing $lockpid to $lockfiles/$cam-$camtype.lock" 
+		builtin echo "$lockpid" > "$lockfiles/$cam-$camtype.lock"
+		sleep $cam_delay  # Between subsequent getcams-xxx process checking or reinvocation
+
+	done < $params
+	echo "Finished Run_cameras Loop $i"
+	echo ""
+	first_loop=false	#Finished first pass, now we are in monitoring mode
+
+	# If cam_params has changed since last reading, kill and restart all cams
+	new_param_date=`stat  --printf %Y $params`
+	if [[ $new_param_date != $cam_param_date  ]] ;
+	then 
+		#Reread cam_params file, terminate and restart all procs, 
+		echo "Resetting: new_param_date=$new_param_date and old cam_param_date=$cam_param_date"
+		first_loop=true
+		cam_param_date=$new_param_date
+	fi
+	# If cam_access has changed since last reading, kill and restart all cams
+	new_access_date=`stat --printf %Y $access`
+	if [[ $new_access_date != $cam_access_date  ]] ;
+	then 
+		#Reread cam_access file, terminate and restart all procs, 
+		echo "Resetting: new_access_date=$new_access_date and old cam_access_date=$cam_access_date"
+		first_loop=true
+		cam_access_date=$new_access_date
+	fi
+	if [[ "$DBG" ]] && [ $i -eq $runs ] ; 
+	then
+		break  # In debug mode quit after $runs loops
+	fi
+	sleep $rescan_delay	
+done    #In production mode, should run as a service and never exit ... 
+echo "$(basename $0)[$$]:Done!" #rm -f "$LOCK"  ... Removed in exit trap
+

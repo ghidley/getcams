@@ -1,0 +1,40 @@
+#:Comments lines start with # ...
+#:Special case commands, uncomment to trigger
+#KILLALL:::Kills all fetch processes, removes lockfiles, and terminates run_cameras
+#HALT::::::Terminates run_cameras
+#Note::::::The label field MUST be quoted with ""
+#Note::::::RUN_ONCE=0 to run camera fetch continuously, RUN_ONCE=1 to run fetch for one minute only
+#:
+#:Below are camera control parameters
+#NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE
+#hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
+#smer-tcs3-mobo:getcams-mobo.pl:c:0:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c1":0:1
+#KILLALL:
+testcam:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
+#testmobo:getcams-mobo.pl:c:0:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c1":1:1
+#
+#
+hpwren-iqeye7:getcams-iqeye.pl:c:0:"CalFire Ramona AAB, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye8:getcams-iqeye.pl:c:0:"Lacima, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye9:getcams-iqeye.pl:c:0:"California Wolf center, http\://californiawolfcenter.org c1":0:1
+#hpwren-iqeye11:getcams-iqeye.pl:c:0:"Lyons Peak West, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye12:getcams-iqeye.pl:c:0:"Lyons Peak North, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye13:getcams-iqeye.pl:c:0:"Lyons Peak East, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye14:getcams-iqeye.pl:c:0:"Lyons Peak South, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye15:getcams-iqeye.pl:c:0:"USFWS Sweetwater Marsh,http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye17:getcams-iqeye.pl:c:0:"Mesa Grande East, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye18:getcams-iqeye.pl:c:0:"Mesa Grande South, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye19:getcams-iqeye.pl:c:0:"Mesa Grande West, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye20:getcams-iqeye.pl:c:0:"Mesa Grande North, http\://hpwren.ucsd.edu c1":0:1
+#cnm-z1-nw:getcams-iqeye.pl:c:0:"NPS CABR Z1NW, http\://hpwren.ucsd.edu c1":0:1
+#cnm-z1-sw:getcams-iqeye.pl:c:0:"NPS CABR Z1SW, http\://hpwren.ucsd.edu c1":0:1
+#cnm-z3-nw:getcams-iqeye.pl:c:0:"NPS CABR Z3 tidepools, http\://hpwren.ucsd.edu c1":0:1
+#cnm-z3-s:getcams-iqeye.pl:c:0:"NPS CABR Z3S, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye21:getcams-iqeye.pl:c:0:"SMER river crossing, http\://hpwren.ucsd.edu c1":0:1
+#smer-gorge:getcams-iqeye.pl:c:0:"SMER Gorge, SDSUFS, http\://hpwren.ucsd.edu c1":0:1
+#smer-iqeye2:getcams-iqeye.pl:c:0:"SMER Gorge NE, SDSUFS, http\://hpwren.ucsd.edu c1":0:1
+#slc-iqeye:getcams-iqeye.pl:c:0:"NPS Spanish Landing, http\://hpwren.ucsd.edu c1":0:1
+#slc-iqeye2:getcams-iqeye.pl:c:0:"NPS Spanish Landing, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye23:getcams-iqeye.pl:c:0:"Temecula1, http\://hpwren.ucsd.edu c1":0:1
+#hpwren-iqeye24:getcams-iqeye.pl:c:0:"Temecula2, http\://hpwren.ucsd.edu c1":0:1
+##mpo-p200iqeye:getcams-iqeye.???:c:0:"Palomar Observatory, 200inch, http\://hpwren.ucsd.edu c1":0:1
