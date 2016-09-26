@@ -1,5 +1,6 @@
 #!/bin/csh
-# v113015
+# v092606
+# Updated log file locations to /var/local/hpwren
 # Updated to handle motion detected images as well
 # Target changed to /Data/archive to effectively merge real-time and archival image areas
 #
@@ -14,7 +15,9 @@
 #     2) copies previous "current" images from c1:/usr/LocalWeb/Boiler/Cameras/L/$CAMERA to $DIR/$CAMERA areas for archival
 #     3) copies latest "current" images from c1 ramdisk tmp area (c1:/usr/LocalWeb/Boiler/Cameras/L/tmp) to c1:/usr/LocalWeb/Boiler/Cameras/L/$CAMERA
 #set DBG = 1
-set LOG = ~hpwren/bin/logfiles/updatelog
+#Old: set LOG = ~hpwren/bin/logfiles/updatelog
+set LOG = /var/local/hpwren/log/updatelog
+
 
 #if ($?DBG) then
 	echo -n Running updateanimations 1=$argv[1] 2=$argv[2] 3=$argv[3] 4=$argv[4] 5=$argv[5]  " " >> $LOG
