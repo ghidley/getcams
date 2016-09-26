@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-$VERS="082916";
+$VERS="092616";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsmiqeyeanimations6.pl which was crontab driven
@@ -38,7 +38,7 @@ $DBG = "$ENV{DBG}" ;
 $PATH = "$ENV{PATH}" ;
 $HOME = "$ENV{HOME}" ;
 $HPATH="$HOME/bin";
-$LOGS = "$HPATH/logfiles";
+$LOGS = "/var/local/hpwren/log";
 
 $|++;  # Flush IO buffer at every print
 

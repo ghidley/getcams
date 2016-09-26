@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v083016"
+version="v092616"
 #
 # Managed by systemctl start/stop/restart when in production mode:
 #	Start=/home/hpwren/bin/run_cameras -I
@@ -21,10 +21,10 @@ version="v083016"
 #    KILLALL: Special case to terminate all running camera fetch process and run_cameras (this program)
 #    HALT: Special case to terminate run_cameras script (this program)
 #
-# Locks self using $epath/lockfiles/RUNCAM_PID 
-# Locks children using $epath/lockfiles/$getcams-xxx.lock
+# Locks self using $lockpath/RUNCAM_PID 
+# Locks children using $lockpath/$getcams-xxx.lock
 # Logs debug info to stdout
-# Logs to $epath/runcamlog: KILLALLs, HALTs, and getcam invocations 
+# Logs to $logpath/runcamlog: KILLALLs, HALTs, and getcam invocations 
 # Logs to /var/log/messages (via logger, syslog) upon signal trap or exit:
 #	getcams_xxx[pid] was terminated: -- restart with  \"run_cameras -I\" if needed"
 #
@@ -49,11 +49,13 @@ PATH="$HOME/bin:$PATH"
 export PATH
 
 epath="$HOME/bin"
-log="$epath/logfiles/runcamlog"
 params="$epath/cam_params"
 access="$epath/cam_access"
-lockfiles="$epath/lockfiles"
-LOCK="$lockfiles/RUNCAM_PID"
+
+logpath="/var/local/hpwren/log"
+log="$logpath/runcamlog"
+lockpath="/var/local/hpwren/lock"
+LOCK="$lockpath/RUNCAM_PID"
 
 KILLALL="KILLALL"
 HALT="HALT"
@@ -127,7 +129,7 @@ then
 		rm -f "$LOCK" # In case any is left over
 	fi
 	#terminate any running getcams*
-	for f in $lockfiles/*.lock
+	for f in $lockpath/*.lock
 	do
 		[ -e "${f}" ] || continue
 		kpid=(cat ${f})
@@ -155,7 +157,7 @@ finish() {
 }
 
 # Manage master lockfile directory
-[ -e $lockfiles ] || mkdir $lockfiles 
+[ -e $lockpath ] || mkdir $lockpath 
 
 if [ -f "$LOCK" ] ;  #if script lockfile exists then 
 then
@@ -208,7 +210,7 @@ do
 		# Special case for stopping all cams and for terminating run_cameras
 		case $cam in
 			$KILLALL )
-				for f in $lockfiles/*.lock
+				for f in $lockpath/*.lock
 				do
 					[ -e "${f}" ] || continue
 					kpid=(cat ${f})
@@ -241,9 +243,9 @@ do
 
 		# if lockfile exists, and process is not running, send kill and remove lockfile
 		running=false
-		if [ -f  "$lockfiles/$cam-$camtype.lock" ] ; then 
-			echo "Lockfile exists - `ls -ldg $lockfiles/$cam-$camtype.lock`" 
-			pid=`cat $lockfiles/$cam-$camtype.lock`
+		if [ -f  "$lockpath/$cam-$camtype.lock" ] ; then 
+			echo "Lockfile exists - `ls -ldg $lockpath/$cam-$camtype.lock`" 
+			pid=`cat $lockpath/$cam-$camtype.lock`
 			if [ -e /proc/$pid ] ; then running=true ; fi
 			# Previously used: kill -0  $pid &> /dev/null ; #killed=$?
 			if [[ "$first_loop" = false ]] ;  #Already completed startup, not first time through camera loop ... now in monitoring mode ... restart only if needed
@@ -255,8 +257,8 @@ do
 			# to this code to do a restart of all camera fetches
 			if [[ "$running" = true ]] ; then kill $pid &> /dev/null  ; fi #kill leftover process if running
 			# remove lockfile and fall through to restart cam fetch
-			rm -f $lockfiles/$cam-$camtype.lock
-			echo "Killed proc $pid and removed old $lockfiles/$cam-$camtype.lock"
+			rm -f $lockpath/$cam-$camtype.lock
+			echo "Killed proc $pid and removed old $lockpath/$cam-$camtype.lock"
 		fi
 
 		# If we got here, leftover lock files have been removed and we now need to restart the camera fetch process 
@@ -264,8 +266,8 @@ do
 tstamp=`date +"%Y%m%d.%H%M%S"`
 		printf "$tstamp: $(basename $0)[$$]: Starting $epath/$prog $cam $camtype $delay $label $run_once $cpm\n" >> $log
 		$epath/$prog $cam $camtype $delay "$label" $run_once $cpm & lockpid=$!
-		echo "Writing $lockpid to $lockfiles/$cam-$camtype.lock" 
-		builtin echo "$lockpid" > "$lockfiles/$cam-$camtype.lock"
+		echo "Writing $lockpid to $lockpath/$cam-$camtype.lock" 
+		builtin echo "$lockpid" > "$lockpath/$cam-$camtype.lock"
 		sleep $cam_delay  # Between subsequent getcams-xxx process checking or reinvocation
 
 	done < $params
