@@ -1,6 +1,32 @@
+This directory, probably ~ghidley/getcams, is the source directory for the getcams system.
+Sources stored on https://github.com/ghidley/getcams
+
+Most development done here, then followed by  "sudo make" to install in run area
+Running "sudo make all" will also cp over vanilla control files cam_access_format and cam_params
+Password file cam_access is handled manually (and not present in git repository)
+See ./t for testing system ...
+
+Testing start (-I) -- one fo following:
+    sudo -u hpwren ~hpwren/bin/getcams/run_cameras -I
+    make start
+    systemctl start getcams
+
+Testing restart (-R) -- one of following:
+    sudo -u hpwren ~hpwren/bin/getcams/run_cameras -R 
+    make restart
+    systemctl restart getcams
+
+Testing stop (-X) -- one of following:
+    sudo -u hpwren ~hpwren/bin/getcams/run_cameras -X 
+    make stop
+    systemctl stop getcams
+
 Design Goals
-Replicates archive*'s getcamsXXXanimations + c1's updatedanimations functionality initially (populating c1:/Data/archive, while disabling archive* scp's and ssh's to c1)
-Could at some point also populate wfe camera web site (displacing archive*)
+Replicates archive*'s getcamsXXXanimations + c[12]'s updatedanimations functionality initially
+  Original goal was populating c1:/Data/archive, while disabling archive* scp's and ssh's to c1
+  Revised goal is to run on c0 VM and populate ceph storage
+
+Could at some point also [re]populate wfe camera web site (displacing archive*)
 Provide alternate timing mechanism not dependent on cron ... drive via boot startup
  
 Design Phases
@@ -8,6 +34,12 @@ DONE: Use prefetched image for initial POC for mobo cam ... embed args in progra
 DONE: Add lookup of security info from protected file 
 DONE: Convert to use boot driven run_cameras - getcams-xxx.pl invocation
 DONE: When private network is accessible, use in program fetch of cam image
-Test timing and functionality ...
-When available, use fetch proxie
+DONE: Test timing and functionality ...
+DONE: Check daemon mode operations
 
+TODO:
+Created getcams-mobo.pl (from latest getcams-iqeye.pl)
+Setup as service via systemctl
+
+Containerize???
+When available, use fetch proxie

@@ -1,9 +1,9 @@
 #!/usr/bin/perl
-# getcams-iqeye.pl
+# getcams-mobo.pl
 
-$VERS="09102018";
+$VERS="09092018";
 =begin comment
-  getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
+  getcams-mobo.pl -- camera image fetch and processing script for Mobotix cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
     (e.g. ...  hpwren ~hpwren/bin/getcams-iqeye.pl hpwren-iqeye7=login:201110\@   N  7 C "Cal Fire Ramona AAB, http://hpwren.ucsd.edu a2")
   
@@ -50,16 +50,16 @@ unless(-e $LOGS or mkdir $LOGS) { die "Unable to create $LOGS\n"; }
 
 $TVS = "$HPATH/tvpattern-small.jpg";
 $PW = "$HPATH/cam_access";  
-$DIR="/Data/archive";                   # Archival image location
-$TDIR="/Data-local/tmp";                # Temp/local faster location for interim processing
-$CDIR= "$DIR/incoming/cameras/tmp";     # Current image location
+$DIR="/Data/archive";
+$DEST= "$DIR/incoming/cameras/tmp"; 
 
 #Check if we have enough ARGS
 die "Insufficient args, got $#ARGV, need 5\n" if ( $#ARGV != 6 ) ;
 
 $CAMERA=$ARGV[0]; 
-$HOST=$CAMERA;
-$TYPE=$ARGV[1];    #c or n
+$TYPE=$ARGV[1];    #c or m
+$HOST=$CAMERA; # Camname without -c/m
+$CAMERA="$CAMERA-$TYPE";
 $STARTUP_DELAY=$ARGV[2];
 if($STARTUP_DELAY ne "0"){sleep($STARTUP_DELAY);} 
 $LABEL=$ARGV[3];
@@ -74,7 +74,7 @@ $CPM=$ARGV[5];
 $URL=$ARGV[6];
 
 if ( $URL eq "DEFAULT" ) {
-    $HTTP="http://$HOST/now.jpg?jq=75&ds=1";
+    $HTTP="http://$HOST/cgi-bin/image.jpg?imgprof=Full-$TYPE";
 } else {
     $HTTP=$URL;
 }
@@ -113,12 +113,12 @@ open FILE, '<', $PW or die "File $PW not found - $!\n";
 while (<FILE>) {
 	chomp;
 	my @elements = split /:/, $_;
-	next unless $elements[0] eq $CAMERA;
+	next unless $elements[0] eq $HOST;
 	$LOGIN = $elements[1];
 	$PWD = $elements[2];
 }
 close FILE;
-#$ADJUST = 0; #Offset for image processing time
+#$ADJUST = 12; #Offset for image processing time
 $WAIT_TIME = 60/$CPM;	#Time to wait between camera fetches
 #if ( $WAIT_TIME > $ADJUST ) { $WAIT_TIME = 60/$CPM - $ADJUST ; }
 
@@ -164,7 +164,6 @@ sub UpdateTimeStamp {
 	$olddstamp=sprintf"%.4d%.2d%.2d",$oldyear,$oldmon,$oldmday;
 	system("mkdir -p $DIR/$CAMERA/small/$dstamp/$APTAG 2> /dev/null");  #No longer needed
 	system("mkdir -p $DIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null");
-	system("mkdir -p $TDIR/$CAMERA 2> /dev/null");
 } #End UpdateTimeStamp
 
 
@@ -175,10 +174,10 @@ while ( 'true' ) {
 		UpdateTimeStamp();
 		if ($DBG) {
 			print "\tcapture $ITERATIONS of $CPM \n";
-			print "\tsystem(\"curl -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
+			print "\tsystem(\"curl -s $CREDS -o $DIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
 		}
-		print $FH "$dtstamp: $ID system(\"curl -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
-		$R=system("curl -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
+		print $FH "$dtstamp: $ID system(\"curl -s $CREDS -o $DIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
+		$R=system("curl -s $CREDS -o $DIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
 		if($R == 0){
 			if ($DBG) { print "\tFetch succeeded, R = $R, dtstamp = $dtstamp, LABEL = $LABEL\n"; }
                         if ( -s "$DIR/$CAMERA/temp.ppm" ) {  # File exists and is not empty
@@ -186,47 +185,47 @@ while ( 'true' ) {
                             system("cp $DIR/$CAMERA/temp.ppm $DIR/$CAMERA/temp-old.ppm");
                             rename("$DIR/$CAMERA/temp175.ppm","$DIR/$CAMERA/temp175-old.ppm");
                         }
-			if ($DBG) { print "\tsystem(\"convert $TDIR/$CAMERA/temp.jpg $TDIR/$CAMERA/temp2.ppm 2> /dev/null)\"\n"; }
-			system("convert $TDIR/$CAMERA/temp.jpg $TDIR/$CAMERA/temp2.ppm 2> /dev/null");
+			if ($DBG) { print "\tsystem(\"convert $DIR/$CAMERA/temp.jpg $DIR/$CAMERA/temp2.ppm 2> /dev/null)\"\n"; }
+			system("convert $DIR/$CAMERA/temp.jpg $DIR/$CAMERA/temp2.ppm 2> /dev/null");
 			$LABELS="$dtstamp $LABEL";
-			if ($DBG) { print "\tsystem(ppmlabel -x 0 -y 24 -color orange -background transparent -size 20 -text \n\t\"$LABELS\" $TDIR/$CAMERA/temp2.ppm > $TDIR/$CAMERA/temp.ppm 2> /dev/null);\n"; }
-			system("ppmlabel -x 0 -y 24 -color orange -background transparent -size 20 -text \"$LABELS\" $TDIR/$CAMERA/temp2.ppm > $TDIR/$CAMERA/temp.ppm 2> /dev/null");
-			if ( -e "$TDIR/$CAMERA/temp.ppm" ) {  # File exists and is not empty
-				system("convert $TDIR/$CAMERA/temp.ppm $TDIR/$CAMERA/temp.jpg");
-				system("pnmscale -xsize=640 -ysize=480 $TDIR/$CAMERA/temp.ppm > $TDIR/$CAMERA/temp640.ppm");
-				system("pnmscale -xsize=175 -ysize=131 $TDIR/$CAMERA/temp640.ppm > $TDIR/$CAMERA/temp175.ppm");
-                                if ( -e "$TDIR/$CAMERA/temp-old.ppm" ) {  # File exists and is not empty 
-                                    system("pnmarith -diff $TDIR/$CAMERA/temp.ppm $TDIR/$CAMERA/temp-old.ppm > $TDIR/$CAMERA/tempdiff.ppm");
-                                    system("pnmarith -diff $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/temp175-old.ppm > $TDIR/$CAMERA/tempdiff175.ppm");
-                                    system("convert -quality 70 $TDIR/$CAMERA/tempdiff.ppm $TDIR/$CAMERA/tempdiff.jpg"); 
-                                    system("convert -quality 70 $TDIR/$CAMERA/tempdiff175.ppm $TDIR/$CAMERA/tempdiff175.jpg"); 
-                                    rename("$TDIR/$CAMERA/tempdiff.jpg","$TDIR/$CAMERA/$CAMERA-diff.jpg");
-                                    rename("$TDIR/$CAMERA/tempdiff175.jpg","$TDIR/$CAMERA/$CAMERA-diff175.jpg");
-                                    system("cp $TDIR/$CAMERA/$CAMERA-diff.jpg   $TDIR/$CAMERA/$CAMERA-diff175.jpg $CDIR");
+			if ($DBG) { print "\tsystem(ppmlabel -x 0 -y 24 -color orange -background transparent -size 20 -text \n\t\"$LABELS\" $DIR/$CAMERA/temp2.ppm > $DIR/$CAMERA/temp.ppm 2> /dev/null);\n"; }
+			system("ppmlabel -x 0 -y 24 -color orange -background transparent -size 20 -text \"$LABELS\" $DIR/$CAMERA/temp2.ppm > $DIR/$CAMERA/temp.ppm 2> /dev/null");
+			if ( -e "$DIR/$CAMERA/temp.ppm" ) {  # File exists 
+				system("convert $DIR/$CAMERA/temp.ppm $DIR/$CAMERA/temp.jpg");
+				system("pnmscale -xsize=640 -ysize=480 $DIR/$CAMERA/temp.ppm > $DIR/$CAMERA/temp640.ppm");
+				system("pnmscale -xsize=175 -ysize=131 $DIR/$CAMERA/temp640.ppm > $DIR/$CAMERA/temp175.ppm");
+                                if ( -e "$DIR/$CAMERA/temp-old.ppm" ) {  # File exists 
+                                    system("pnmarith -diff $DIR/$CAMERA/temp.ppm $DIR/$CAMERA/temp-old.ppm > $DIR/$CAMERA/tempdiff.ppm");
+                                    system("pnmarith -diff $DIR/$CAMERA/temp175.ppm $DIR/$CAMERA/temp175-old.ppm > $DIR/$CAMERA/tempdiff175.ppm");
+                                    system("convert -quality 70 $DIR/$CAMERA/tempdiff.ppm $DIR/$CAMERA/tempdiff.jpg"); 
+                                    system("convert -quality 70 $DIR/$CAMERA/tempdiff175.ppm $DIR/$CAMERA/tempdiff175.jpg"); 
+                                    rename("$DIR/$CAMERA/tempdiff.jpg","$DIR/$CAMERA/$CAMERA-diff.jpg");
+                                    rename("$DIR/$CAMERA/tempdiff175.jpg","$DIR/$CAMERA/$CAMERA-diff175.jpg");
+                                    system("cp $DIR/$CAMERA/$CAMERA-diff.jpg   $DIR/$CAMERA/$CAMERA-diff175.jpg $DEST");
                                 }
-				system("convert -quality 70 $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/temp175.jpg");
-				system("convert -quality 70 $TDIR/$CAMERA/temp640.ppm $TDIR/$CAMERA/temp640.jpg");
-				system("cp $TDIR/$CAMERA/temp.jpg $TDIR/$CAMERA/tempx.jpg");
-				rename("$TDIR/$CAMERA/tempx.jpg","$TDIR/$CAMERA/$CAMERA.jpg");
-				rename("$TDIR/$CAMERA/temp175.jpg","$TDIR/$CAMERA/$CAMERA-175.jpg");
-				rename("$TDIR/$CAMERA/temp640.jpg","$TDIR/$CAMERA/$CAMERA-640.jpg");
-				system("cp $TDIR/$CAMERA/$CAMERA-640.jpg $TDIR/$CAMERA/small/$dstamp/$APTAG/$time.jpg");
-				system("chmod 644 $TDIR/$CAMERA/*.jpg");
-				rename("$TDIR/$CAMERA/temp.jpg","$TDIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
+				system("convert -quality 70 $DIR/$CAMERA/temp175.ppm $DIR/$CAMERA/temp175.jpg");
+				system("convert -quality 70 $DIR/$CAMERA/temp640.ppm $DIR/$CAMERA/temp640.jpg");
+				system("cp $DIR/$CAMERA/temp.jpg $DIR/$CAMERA/tempx.jpg");
+				rename("$DIR/$CAMERA/tempx.jpg","$DIR/$CAMERA/$CAMERA.jpg");
+				rename("$DIR/$CAMERA/temp175.jpg","$DIR/$CAMERA/$CAMERA-175.jpg");
+				rename("$DIR/$CAMERA/temp640.jpg","$DIR/$CAMERA/$CAMERA-640.jpg");
+				system("cp $DIR/$CAMERA/$CAMERA-640.jpg $DIR/$CAMERA/small/$dstamp/$APTAG/$time.jpg");
+				system("chmod 644 $DIR/$CAMERA/*.jpg");
+				rename("$DIR/$CAMERA/temp.jpg","$DIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
 				# Copy latest images to destination
-                                system("convert $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $CDIR/$CAMERA.jpg");
-				system("cp $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg $CDIR");
+                                system("convert $DIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $DEST/$CAMERA.jpg");
+				system("cp $DIR/$CAMERA/$CAMERA-175.jpg $DIR/$CAMERA/$CAMERA-640.jpg $DEST");
 				# If targetting c1 or c2, the call to updateanimations might need to go here
 			} else {
-				if ($DBG) { print "\tNo $TDIR/$CAMERA/temp.ppm file\n"; }
+				if ($DBG) { print "\tNo $DIR/$CAMERA/temp.ppm file\n"; }
 			} 
 		} else {  
 			# No image available ... $R != 0
 			if ($DBG) { print "\tFetch failed, R = $R\n"; }
 			print $FH "$dtstamp: $ID Fetch failed, R = $R\n";
-			if ($DBG) { print "\tsystem(\"cp $TVS $TDIR/$CAMERA/$CAMERA-175.jpg\");  \n\t"; }
-			system("cp $TVS $TDIR/$CAMERA/$CAMERA-175.jpg");
-			system("cp $TVS $CDIR/$CAMERA-175.jpg");
+			if ($DBG) { print "\tsystem(\"cp $TVS $DIR/$CAMERA/$CAMERA-175.jpg\");  \n\t"; }
+			system("cp $TVS $DIR/$CAMERA/$CAMERA-175.jpg");
+			system("cp $TVS $DEST/$CAMERA-175.jpg");
 		}
 		if ($DBG) { print "\tSleeping $WAIT_TIME seconds ...\n"; }
 		sleep($WAIT_TIME);

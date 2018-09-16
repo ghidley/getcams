@@ -1,0 +1,20 @@
+# getcams.service
+# Controls hpwren camera image fetching
+#
+# RemainAfterExit=yes  ???
+# Place script in /etc/systemd/system (man systemd.target explains)
+# ExecReload
+[Unit]
+Description=HPWREN Getcams Service
+After=network.target
+
+[Service]
+PIDFile=/var/local/hpwren/lock/RUNCAM_PID
+Type=simple 
+User=hpwren
+ExecStart=/home/hpwren/bin/getcams/run_cameras -I
+ExecStop=/home/hpwren/bin/getcams/run_cameras -X
+
+[Install]
+WantedBy=multi-user.target
+
