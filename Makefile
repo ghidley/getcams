@@ -3,30 +3,31 @@
 # Place getcams.service in confirmed location
 # Once debugged, add and commit
 #
-DESTDIR=~hpwren/bin/getcams
-LOCALDIR=/Data-local/tmp
-ALLFILES=cam_access cam_access_format cam_params getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras t tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png
-RUNFILES=getcams-iqeye.pl getcams-mobo.pl tvpattern-small.jpg run_cameras hpwren8-400.png
+ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras t tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile
+RUNFILES=getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl tvpattern-small.jpg run_cameras hpwren8-400.png Makefile
+
+ARCHDIR=/Data/archive
+CDIR=$(ARCHDIR)/incoming/cameras
+DATADIR=/Data
+INCOMING=$(ARCHDIR)/incoming/cameras/tmp
+RUNDIR=~hpwren/bin/getcams
 CONTROLFILES=cam_access_format cam_params cam_access
+LOCALDIR=/Data-local/scratch
 SYSLOCAL=/var/local/hpwren
 LOCKDIR=$(SYSLOCAL)/lock
 LOGDIR=$(SYSLOCAL)/log
-DATADIR=/Data
-ARCHDIR=/Data/archive
-INCOMING=/Data/archive/incoming/cameras/tmp
+
+ALLDIRS=$(CDIR) $(DATADIR) $(ARCHDIR) $(INCOMING) $(LOCALDIR) $(LOCKDIR) $(LOGDIR) $(RUNDIR) $(SYSLOCAL) 
+
 install:	
-	mkdir -p $(LOCALDIR)
-	mkdir -p $(DESTDIR)
-	mkdir -p $(DATADIR)
-	mkdir -p $(ARCHDIR)
-	mkdir -p $(SYSLOCAL)
-	mkdir -p $(LOCKDIR)
-	mkdir -p $(LOGDIR)
-	mkdir -p $(INCOMING)
-	chown hpwren:hpwren $(DESTDIR) $(SYSLOCAL) $(LOCKDIR) $(LOGDIR) $(DATADIR) $(ARCHDIR) $(INCOMING) $(LOCALDIR)
-	chmod g+w $(DESTDIR) $(SYSLOCAL) $(LOCKDIR) $(LOGDIR) $(DATADIR) $(ARCHDIR) $(INCOMING)
-	cp $(RUNFILES) $(DESTDIR)
-	chown hpwren:hpwren $(DESTDIR)/*
+	mkdir -p $(ALLDIRS)
+	chown hpwren:hpwren $(ALLDIRS)
+	chown hpwren:hpwren $(ALLDIRS)
+	chmod g+w $(ALLDIRS)
+	#Following chmod may fail if on a ceph mounted file system
+	-chmod g+s $(ALLDIRS)
+	cp $(RUNFILES) $(RUNDIR)
+	chown hpwren:hpwren $(RUNDIR)/*
 
 test: testd
 testd:
@@ -43,6 +44,10 @@ stop:
 	sudo -b -u hpwren ~hpwren/bin/getcams/run_cameras -X 
 
 all: install $(CONTROLFILES)
-	cp $(CONTROLFILES) $(DESTDIR)
-	chown hpwren:hpwren $(DESTDIR)/*
+	cp $(CONTROLFILES) $(RUNDIR)
+	chown hpwren:hpwren $(RUNDIR)/*
+	cp getcams.service /usr/lib/systemd/system
+
+enable: getcams.service 
+	sudo -b -u hpwren systemctl enable getcams.service
 

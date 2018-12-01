@@ -1,23 +1,26 @@
 #!/bin/bash 
-version="v090918"
+version="v112818"
 #
 # Will be managed by systemctl start/stop/restart when in production mode:
 #	Start=/home/hpwren/bin/run_cameras -I
 #	ExecStop=/home/hpwren/bin/run_cameras -X
+#
 # Will be invoked at boot once "systemctl enable getcams" is run, from:
 #	/etc/systemd/system/multi-user.target.wants/getcams.service
-# Other options include -d (parent debug) and -D (parent and child debug)
+# Other options include -d (parent debug) and -D (parent and child debug) or a "make test"
 # Service control options added: -X to stop, -R to restart, -I to start (initialy at boot)
 # Can also control running process by adding KILLALL or HALT as special camname keyword to cam_params
 #    HALT removes the run_cameras lockfile and halts the run_cameras process (leaves getcams* running)
 #    KILLALL terminates all camera fetch processes (getcams*), removes all lockfiles and then halts the run_cameras process
+#    NOTE: must remember to comment out the above HALT or KILLALL before starting run_cameras again!
 #
 # run_cameras:
 # Starts fetching images from all enabled cameras
 # Reads camera parameters from cam_params:
-#    NAME:PROGRAM:TYPE:STARTUP_DELAY:LABEL:RUN_ONCE:CAPTURES/MINUTE
+#    NAME:PROGRAM:TYPE:STARTUP_DELAY:LABEL:RUN_ONCE:CAPTURES/MINUTE:OPTIONAL CAM-SPECIFIC URL TO USE WITH CURL:
 #    hpwren-iqeye7:getcams-iqeye.pl:c:2:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
 #    smer-tcs3-mobo:getcams-mobo.pl:c:3:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c1":1:1
+#    mpo-p200iqeye:getcams-iqeye.pl:c:0:"Palomar Observatory, 200 inch, http\://hpwren.ucsd.edu c0":0:1:'http\://p200cam.palomar.caltech.edu/now.jpg':
 #    KILLALL: Special case to terminate all running camera fetch process and run_cameras (this program)
 #    HALT: Special case to terminate run_cameras script (this program)
 #
@@ -29,13 +32,13 @@ version="v090918"
 #	getcams_???[pid] was terminated: -- restart with  \"run_cameras -I\" if needed"
 #
 # Overall logic:
-# while true 
+# while true (loop)
 #   while read cam_params (e.g. for each camera entry ...)
 #     if first time through loop or if cam_params changed since last reading
-#       Kill any running fetches (getcams-???'s), remove their  lockfiles ... and fall through to [re]Exec below
+#       Kill any running fetches (getcams-???'s), remove their lockfiles ... and fall through to [re]Exec below
 #     else (in monitoring mode)
 #       if cam fetch process running, continue (skip) to next cam fi, ... otherwise
-#       Remove any leftover lockfiles and fall through to [re]exec fetch
+#       Remove any leftover lockfiles and fall through to [re]exec fetch (getcams-???'s)
 #     fi
 #     [Re-]exec camera fetch
 #   done while read cam_params
@@ -70,13 +73,12 @@ cam_param_date=$(stat  --printf %Y $params)
 cam_access_date=$(stat --printf %Y $access)
 tstamp=$(date +"%Y%m%d.%H%M%S")
 
-# DEBUGGING PARAMETERS ... fix for production! ... referrenced in lines with xxx
-debug_runs=5		#xxx For debug only, run n iterations ...
-rescan_delay=60  #xxx Adjust for production, maybe 600 seconds ??? time between re-reading of cam_param file
+debug_runs=5		#For debug only, run n iterations ...
+rescan_delay=60  #Time between re-reading of cam_param file
 cam_delay=1  #Delay between reading each line of cam_params (and checking or restarting getcams-??? processes)
 
 first_loop=true	# Enable first time through loop logic, killing, if needed, and [re]starting all cam fetch processes
-i=0
+loop=0
 
 #printf "$tstamp: $(basename $0)[$$]: Starting $(basename $0) $@ ..." >> $log
 printf "$tstamp: $(basename $0)[$$]: Starting $(basename $0) $* ..." >> $log
@@ -138,17 +140,17 @@ then
 		kill $kpid # &> /dev/null #kill process, remove lockfile and fall through to exit
 		rm -f ${f}
 		printf "Killed proc $kpid and removed old lockfile ${f}\n"
-                printf "$tstamp: $(basename $0)[$$]: Killed ${f} [$kpid] ..." >> $log
+                printf "$tstamp: $(basename $0)[$$]: Killed ${f} [$kpid] ...\n" >> $log
 	done
 	if [[ "$STOP" = true ]] ; 
 	then
 		printf "Exiting\n"
 		logger -p notice -- "$(basename $0)[$pid] service stopped"
-                printf "$tstamp: $(basename $0)[$$]: Exiting $(basename $0) $* ..." >> $log
+                printf "$tstamp: $(basename $0)[$$]: Exiting $(basename $0) $* ...\n" >> $log
 		exit 0
 	else
 		logger -p notice -- "$(basename $0)[$$] service restarted"
-                printf "$tstamp: $(basename $0)[$$]: Service restarted ..." >> $log
+                printf "$tstamp: $(basename $0)[$$]: Service restarted ...\n" >> $log
 
 	fi #if STOP, otherwise fall through to run_cameras -I
 fi #if RESTART or STOP ...  
@@ -181,7 +183,7 @@ trap 'finish $LINENO $BASH_COMMAND' EXIT 1 2 3 6
 while [ true ]  
 do
 	((i++))
-	echo "Run_cameras Loop $i"
+	echo "Run_cameras Loop $loop"
 
 	#Fetch camera paramaters from "cam_params" for every enabled camera
 	# Format:
@@ -193,7 +195,7 @@ do
 	# Note: RUN_ONCE=1 runs getcams-??? one time only, which results in one 1 minute camera fetch cycle of CAPTURES/MINUTE image fetches
 
 
-        printf "\n$0:$tstamp: [Re]reading cam_params file ...\n" >> $log
+    #printf "\n$0:$tstamp: [Re]reading cam_params file ...\n" >> $log
 	while  IFS=: read -a line	#Camera fetch execution inner loop ... rereads cam_params each time through allowing run time changes
 	do
 		if [[ ${line[0]:0:1} == "#" ]];
@@ -214,7 +216,6 @@ do
                 else
                     url="DEFAULT"
                 fi
-		#tstamp=`date +"%Y%m%d.%H%M%S"`
 		tstamp=$(date +"%Y%m%d.%H%M%S")
 		# Special case for stopping all cams and for terminating run_cameras
 		case $cam in
@@ -275,22 +276,20 @@ do
 		fi
 
 		# If we got here, leftover lock files have been removed and we now need to restart the camera fetch process 
-                #tstamp=`date +"%Y%m%d.%H%M%S"`
-                tstamp=$(date +"%Y%m%d.%H%M%S")
+        tstamp=$(date +"%Y%m%d.%H%M%S")
 		$epath/$prog $cam $camtype $delay "$label" $run_once $cpm $url & lockpid=$!
 		echo "Started  [$lockpid] $epath/$prog $cam $camtype $delay $label $run_once $cpm $url"
 		printf "$tstamp: $(basename $0)[$$]: Started [$lockpid] $epath/$prog $cam $camtype $delay $label $run_once $cpm $url\n" >> $log
 		echo "Writing $lockpid to $lockpath/$cam-$camtype.lock" 
 		builtin echo "$lockpid" > "$lockpath/$cam-$camtype.lock"
-		sleep $cam_delay  # Between subsequent cam_params line fetching and processing# Wait until re-opening and reparsin cam_params file
+		sleep $cam_delay  # Between subsequent cam_params line fetching and processing
 
 	done < $params
-	echo "Finished Run_cameras Loop $i"
+	echo "Finished Run_cameras Loop $loop"
 	echo ""
 	first_loop=false	#Finished first pass, now we are in monitoring mode
 
 	# If cam_params has changed since last reading, kill and restart all cams
-	#new_param_date=`stat  --printf %Y $params`
 	new_param_date=$(stat  --printf %Y $params)
 	if [[ $new_param_date != $cam_param_date  ]] ;
 	then 
@@ -309,11 +308,11 @@ do
 		first_loop=true
 		cam_access_date=$new_access_date
 	fi
-	if [[ "$DBG" ]] && [ $i -eq $debug_runs ] ; 
+	if [[ "$DBG" ]] && [ $loop -eq $debug_runs ] ; 
 	then
 		break  # In debug mode quit after $debug_runs loops
 	fi
 	sleep $rescan_delay	# Wait until re-opening and reparsing cam_params file
-done    #In production mode, should run as a service and never exit ... 
+done    #In production mode, runs as a service continuously
 echo "$(basename $0)[$$]:Done!" #rm -f "$LOCK"  ... Removed in exit trap
 

@@ -38,8 +38,5 @@ DONE: Test timing and functionality ...
 DONE: Check daemon mode operations
 
 TODO:
-Created getcams-mobo.pl (from latest getcams-iqeye.pl)
-Setup as service via systemctl
-
 Containerize???
 When available, use fetch proxie

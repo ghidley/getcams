@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-axis.pl
 
-$VERS="09202018";
+$VERS="11282018";
 =begin comment
   getcams-axis.pl -- camera image fetch and processing script for axis cameras
   
@@ -91,15 +91,14 @@ if ( $URL eq "DEFAULT" ) {
     ### Axis change
     $HTTP="http://$HOST/axis-cgi/jpg/image.cgi?overlayimage=0";
     $HTTP2="http://$HOST/axis-cgi/com/ptz.cgi?query=position";    #For coordinate fetch
-    $CREDS2=" -u root:mnp32145 ";                                   #For coordinate fetch 
+    $CREDS2=" -u camproxy:TBD ";                                   #For coordinate fetch 
+    #$CREDS2=" -u root:mnp32145 ";                                   #For coordinate fetch 
     ###
 } else {
     $HTTP=$URL;
 }
 
-$SYSDELAY = 30; #Offset for image processing add sleep time
-$WAIT_TIME = 60/$CPM;	#Time to wait between camera fetches
-if ( $WAIT_TIME > $SYSDELAY ) { $WAIT_TIME = 60/$CPM - $SYSDELAY ; }
+$period = int(60/$CPM);       ##Time to wait between camera fetches
 
 $time=time();
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdat)=localtime($time);
@@ -156,7 +155,7 @@ if ($LOGIN eq '') {
 if ($DBG) {
     print "\tRUN_ONE_MINUTE = $RUN_ONE_MINUTE, ";
     print "CPM = $CPM, ";
-    print "WAIT_TIME = $WAIT_TIME, ";
+    print "WAIT_TIME = $period, ";
     print "LOGIN = $LOGIN, ";
     print "PWD = $PWD\n";
 }
@@ -190,7 +189,10 @@ sub UpdateTimeStamp {
 
 system("$MKDIR -p $TDIR/$CAMERA 2> /dev/null");
 
-# Start outer while loop ... do just one cycle (if RUN_ONE_MINUTE is true) otherwise run continously
+my $i = 0;
+my $start_time = time();
+
+# Start outer while loop ... do just one cycle (if RUN_ONE_MINUTE is true) otherwise run continuously
 while ( 'true' ) {
     $ITERATIONS=1;
     while ($ITERATIONS <= $CPM) {# Start inner while loop, repeat CPM times
@@ -202,7 +204,8 @@ while ( 'true' ) {
         print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
         $R=system("$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
         if($R == 0){
-            system("$CURL -s $CREDS2 -o $CDIR/$CAMERA/temp.position $HTTP2 2> /dev/null");
+            #Enable only after checking for valid login, password and URL to invoke
+            #system("$CURL -s $CREDS2 -o $CDIR/$CAMERA/temp.position $HTTP2 2> /dev/null");
             if ($DBG) { print "\tFetch succeeded, R = $R, dtstamp = $dtstamp, LABEL = $LABEL\n"; }
             if ( -s "$TDIR/$CAMERA/temp.ppm" ) {  # File exists and is not empty
                 if ($DBG) { print "\tsystem(\"mv -f $TDIR/$CAMERA/temp.ppm $TDIR/$CAMERA/temp-old.ppm\")\n"; }
@@ -244,6 +247,7 @@ while ( 'true' ) {
             copy  "$TVS", "$CDIR/$CAMERA-175.jpg" or 
                 print $FH "$dtstamp: $ID copy $TVS $CDIR/$CAMERA-175.jpg failed\n"; 
         }
+        $WAIT_TIME= ($start_time + $period * ++$i) - time() ; ##
         if ($DBG) { print "\tSleeping $WAIT_TIME seconds ...\n"; }
         sleep($WAIT_TIME);
         last if ($ITERATIONS == $CPM ); 

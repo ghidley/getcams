@@ -5,7 +5,7 @@
 # Place script in /etc/systemd/system (man systemd.target explains)
 # ExecReload
 [Unit]
-Description=HPWREN Getcams Service
+Description=HPWREN Getcams (run_cameras) Service
 After=network.target
 
 [Service]
