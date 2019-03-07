@@ -49,5 +49,8 @@ all: install $(CONTROLFILES)
 	cp getcams.service /usr/lib/systemd/system
 
 enable: getcams.service 
-	sudo -b -u hpwren systemctl enable getcams.service
+	sudo  -u hpwren systemctl enable getcams.service
+
+disable: getcams.service 
+	sudo  -u hpwren systemctl disable getcams.service
 
