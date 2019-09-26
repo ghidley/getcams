@@ -11,12 +11,12 @@
 ## Disabled, unused or removed cams listed at end of file
 ##NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE:OPTIONAL CAM-SPECIFIC URL TO USE WITH CURL:
 hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c0":0:1:
-#hpwren-iqeye8:getcams-iqeye.pl:c:0:"La Cima, http\://hpwren.ucsd.edu c0":0:1:
-#mpo-p200iqeye:getcams-iqeye.pl:c:0:"Palomar Observatory, 200 inch, http\://hpwren.ucsd.edu c0":0:1:'http\://p200cam.palomar.caltech.edu/now.jpg':
+hpwren-iqeye8:getcams-iqeye.pl:c:0:"La Cima, http\://hpwren.ucsd.edu c0":0:1:
+mpo-p200iqeye:getcams-iqeye.pl:c:0:"Palomar Observatory, 200 inch, http\://hpwren.ucsd.edu c0":0:1:'http\://p200cam.palomar.caltech.edu/now.jpg':
 #smer-gorge:getcams-iqeye.pl:c:0:"SMER Gorge, SDSU FSP http\://hpwren.ucsd.edu c0":0:1:
-#rm-e-mobo:getcams-mobo.pl:c:0:"Red Mountain East, http\://hpwren.ucsd.edu c0":0:1:
+rm-e-mobo:getcams-mobo.pl:c:0:"Red Mountain East, http\://hpwren.ucsd.edu c0":0:1:
 #rm-e-mobo:getcams-mobo.pl:m:0:"Red Mountain East, http\://hpwren.ucsd.edu c0":0:1:
-#rm-n-mobo:getcams-mobo.pl:c:0:"Red Mountain North, http\://hpwren.ucsd.edu c0":0:1:
+rm-n-mobo:getcams-mobo.pl:c:0:"Red Mountain North, http\://hpwren.ucsd.edu c0":0:1:
 #rm-n-mobo:getcams-mobo.pl:m:0:"Red Mountain North, http\://hpwren.ucsd.edu c0":0:1:
 #rm-s-mobo:getcams-mobo.pl:c:0:"Red Mountain South, http\://hpwren.ucsd.edu c0":0:1:
 #rm-s-mobo:getcams-mobo.pl:m:0:"Red Mountain South, http\://hpwren.ucsd.edu c0":0:1:
@@ -72,7 +72,8 @@ hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu
 #69bravo-w-mobo:getcams-mobo.pl:c:0:"LA Co Helibase 69 West, http\://hpwren.ucsd.edu c0":0:1:
 #69bravo-w-mobo:getcams-mobo.pl:m:0:"LA Co Helibase 69 West, http\://hpwren.ucsd.edu c0":0:1:
 69bravo-axis:getcams-axis.pl:c:0:"Boucher Hill, http\://hpwren.ucsd.edu c0":0:1:
-#bh-axis:getcams-axis.pl:c:0:"Boucher Hill, http\://hpwren.ucsd.edu c0":0:1:
+bh-e-axis:getcams-axis.pl:c:0:"Boucher Hill, http\://hpwren.ucsd.edu c0":0:1:
+#bh-w-axis:getcams-axis.pl:c:0:"Boucher Hill, http\://hpwren.ucsd.edu c0":0:1:
 #bi-axis:getcams-axis.pl:c:0:"Birch Hill, http\://hpwren.ucsd.edu c0":0:1:
 #bl2-axis:getcams-axis.pl:c:0:"Black Mountain, http\://hpwren.ucsd.edu c0":0:1:
 #bm-axis:getcams-axis.pl:c:0:"Big Black Mountain, http\://hpwren.ucsd.edu c0":0:1:
@@ -188,6 +189,12 @@ hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu
 #syp-w-mobo:getcams-mobo.pl:c:0:"Santa Ynez Peak West, http\://hpwren.ucsd.edu c0":0:1:
 #syp-w-mobo:getcams-mobo.pl:m:0:"Santa Ynez Peak West, http\://hpwren.ucsd.edu c0":0:1:
 #tp-axis:getcams-axis.pl:c:0:"Toro Peak, http\://hpwren.ucsd.edu c0":0:1:
+#ucsb-axis:getcams-axis.pl:c:0:"UCSB Campus, http\://hpwren.ucsd.edu c0":0:1:
+#victrace-axis:getcams-axis.pl:c:0:"Santa Barbara Mesa, http\://hpwren.ucsd.edu c0":0:1:
+#victrace-ne-mobo:getcams-mobo.pl:c:0:"Santa Barbara Mesa Northeast, http\://hpwren.ucsd.edu c0":0:1:
+#victrace-ne-mobo:getcams-mobo.pl:m:0:"Santa Barbara Mesa Northeast, http\://hpwren.ucsd.edu c0":0:1:
+#victrace-nw-mobo:getcams-mobo.pl:c:0:"Santa Barbara Mesa Northwest, http\://hpwren.ucsd.edu c0":0:1:
+#victrace-nw-mobo:getcams-mobo.pl:m:0:"Santa Barbara Mesa Northwest, http\://hpwren.ucsd.edu c0":0:1:
 #vo-e-mobo:getcams-mobo.pl:c:0:"Volcan Mountain East, http\://hpwren.ucsd.edu c0":0:1:
 #vo-e-mobo:getcams-mobo.pl:m:0:"Volcan Mountain East, http\://hpwren.ucsd.edu c0":0:1:
 #vo-n-mobo:getcams-mobo.pl:c:0:"Volcan Mountain North, http\://hpwren.ucsd.edu c0":0:1:
@@ -215,7 +222,58 @@ hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu
 #wilson-s-mobo:getcams-mobo.pl:m:0:"Mt. Wilson Observatory South, http\://hpwren.ucsd.edu c0":0:1:
 #wilson-w-axis:getcams-axis.pl:c:0:"Mt. Wilson Observatory West, http\://hpwren.ucsd.edu c0":0:1:
 #wilson-w-mobo:getcams-mobo.pl:c:0:"Mt. Wilson Observatory West, http\://hpwren.ucsd.edu c0":0:1:
-wilson-w-mobo:getcams-mobo.pl:m:0:"Mt. Wilson Observatory West, http\://hpwren.ucsd.edu c0":0:1:
+#wilson-w-mobo:getcams-mobo.pl:m:0:"Mt. Wilson Observatory West, http\://hpwren.ucsd.edu c0":0:1:
+## New cams below
+#signal-n-axis:getcams-axis.pl:c:0:"Signal Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#signal-s-axis:getcams-axis.pl:c:0:"Signal Peak South, http\://hpwren.ucsd.edu c0":0:1:
+#signal-e-mobo:getcams-mobo.pl:c:0:"Signal Peak East, http\://hpwren.ucsd.edu c0":0:1:
+#signal-e-mobo:getcams-mobo.pl:m:0:"Signal Peak East, http\://hpwren.ucsd.edu c0":0:1:
+#signal-n-mobo:getcams-mobo.pl:c:0:"Signal Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#signal-n-mobo:getcams-mobo.pl:m:0:"Signal Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#signal-s-mobo:getcams-mobo.pl:c:0:"Signal Peak South, http\://hpwren.ucsd.edu c0":0:1:
+#signal-s-mobo:getcams-mobo.pl:m:0:"Signal Peak South, http\://hpwren.ucsd.edu c0":0:1:
+#signal-w-mobo:getcams-mobo.pl:c:0:"Signal Peak West, http\://hpwren.ucsd.edu c0":0:1:
+#signal-w-mobo:getcams-mobo.pl:m:0:"Signal Peak West, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-n-axis:getcams-axis.pl:c:0:"Marconi Ranch North, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-s-axis:getcams-axis.pl:c:0:"Marconi Ranch South, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-e-mobo:getcams-mobo.pl:c:0:"Marconi Ranch East, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-e-mobo:getcams-mobo.pl:m:0:"Marconi Ranch East, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-n-mobo:getcams-mobo.pl:c:0:"Marconi Ranch North, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-n-mobo:getcams-mobo.pl:m:0:"Marconi Ranch North, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-s-mobo:getcams-mobo.pl:c:0:"Marconi Ranch South, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-s-mobo:getcams-mobo.pl:m:0:"Marconi Ranch South, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-w-mobo:getcams-mobo.pl:c:0:"Marconi Ranch West, http\://hpwren.ucsd.edu c0":0:1:
+#marconi-w-mobo:getcams-mobo.pl:m:0:"Marconi Ranch West, http\://hpwren.ucsd.edu c0":0:1:
+#starr-n-axis:getcams-axis.pl:c:0:"Starr Ranch North, http\://hpwren.ucsd.edu c0":0:1:
+#starr-s-axis:getcams-axis.pl:c:0:"Starr Ranch South, http\://hpwren.ucsd.edu c0":0:1:
+#starr-e-mobo:getcams-mobo.pl:c:0:"Starr Ranch East, http\://hpwren.ucsd.edu c0":0:1:
+#starr-e-mobo:getcams-mobo.pl:m:0:"Starr Ranch East, http\://hpwren.ucsd.edu c0":0:1:
+#starr-n-mobo:getcams-mobo.pl:c:0:"Starr Ranch North, http\://hpwren.ucsd.edu c0":0:1:
+#starr-n-mobo:getcams-mobo.pl:m:0:"Starr Ranch North, http\://hpwren.ucsd.edu c0":0:1:
+#starr-s-mobo:getcams-mobo.pl:c:0:"Starr Ranch South, http\://hpwren.ucsd.edu c0":0:1:
+#starr-s-mobo:getcams-mobo.pl:m:0:"Starr Ranch South, http\://hpwren.ucsd.edu c0":0:1:
+#starr-w-mobo:getcams-mobo.pl:c:0:"Starr Ranch West, http\://hpwren.ucsd.edu c0":0:1:
+#starr-w-mobo:getcams-mobo.pl:m:0:"Starr Ranch West, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-n-axis:getcams-axis.pl:c:0:" Rancho Mission Viejo North, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-s-axis:getcams-axis.pl:c:0:" Rancho Mission Viejo South, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-e-mobo:getcams-mobo.pl:c:0:" Rancho Mission Viejo East, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-e-mobo:getcams-mobo.pl:m:0:" Rancho Mission Viejo East, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-n-mobo:getcams-mobo.pl:c:0:" Rancho Mission Viejo North, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-n-mobo:getcams-mobo.pl:m:0:" Rancho Mission Viejo North, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-s-mobo:getcams-mobo.pl:c:0:" Rancho Mission Viejo South, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-s-mobo:getcams-mobo.pl:m:0:" Rancho Mission Viejo South, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-w-mobo:getcams-mobo.pl:c:0:" Rancho Mission Viejo West, http\://hpwren.ucsd.edu c0":0:1:
+#rmv-w-mobo:getcams-mobo.pl:m:0:" Rancho Mission Viejo West, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-n-axis:getcams-axis.pl:c:0:"San Clemente North, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-s-axis:getcams-axis.pl:c:0:"San Clemente South, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-e-mobo:getcams-mobo.pl:c:0:"San Clemente East, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-e-mobo:getcams-mobo.pl:m:0:"San Clemente East, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-n-mobo:getcams-mobo.pl:c:0:"San Clemente North, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-n-mobo:getcams-mobo.pl:m:0:"San Clemente North, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-s-mobo:getcams-mobo.pl:c:0:"San Clemente South, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-s-mobo:getcams-mobo.pl:m:0:"San Clemente South, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-w-mobo:getcams-mobo.pl:c:0:"San Clemente West, http\://hpwren.ucsd.edu c0":0:1:
+#sclm-w-mobo:getcams-mobo.pl:m:0:"San Clemente West, http\://hpwren.ucsd.edu c0":0:1:
 ## FOLLOWING CAMS ARE DOWN OR REMOVED
 ##hpwren-iqeye9:getcams-iqeye.pl:c:0:"California Wolf Center, http\://californiawolfcenter.org c0":0:1:
 ##hpwren-iqeye17:getcams-iqeye.pl:c:0:"Mesa Grande East, http\://hpwren.ucsd.edu c0":0:1:

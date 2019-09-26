@@ -1,4 +1,5 @@
-This directory, probably ~ghidley/getcams, is the source directory for the getcams system.
+4/20/19
+This directory, if on c0 (c0:~ghidley/getcams), is the source directory for the getcams system.
 Sources stored on https://github.com/ghidley/getcams
 
 Most development done here, then followed by  "sudo make" to install in run area
@@ -21,22 +22,21 @@ Testing stop (-X) -- one of following:
     make stop
     systemctl stop getcams
 
+Start up in debug (-I -D) mode -- one of following:
+    sudo -u hpwren ~hpwren/bin/getcams/run_cameras -I -D
+    make testd
+
 Design Goals
-Replicates archive*'s getcamsXXXanimations + c[12]'s updatedanimations functionality initially
+  Replicates archive*'s getcamsXXXanimations + c[12]'s updatedanimations functionality initially
   Original goal was populating c1:/Data/archive, while disabling archive* scp's and ssh's to c1
   Revised goal is to run on c0 VM and populate ceph storage
-
-Could at some point also [re]populate wfe camera web site (displacing archive*)
-Provide alternate timing mechanism not dependent on cron ... drive via boot startup
+  Maybe in parallel, setup to run on c[12] and drop images into standard locations (emergency replacement for archive[2-5]
+  Provide alternate timing mechanism not dependent on cron ... drive via boot startup 
+  Could at some point also [re]populate wfe camera web site (displacing archive*)
  
-Design Phases
-DONE: Use prefetched image for initial POC for mobo cam ... embed args in program
-DONE: Add lookup of security info from protected file 
-DONE: Convert to use boot driven run_cameras - getcams-xxx.pl invocation
-DONE: When private network is accessible, use in program fetch of cam image
-DONE: Test timing and functionality ...
-DONE: Check daemon mode operations
+Use daemon driven run_cameras - getcams-xxx.pl invocation
+Uses local FS for temp files
 
 TODO:
 Containerize???
-When available, use fetch proxie
+When available, use fetch proxie???

@@ -1,17 +1,17 @@
 #!/usr/bin/perl
 # getcams-iqeye.pl
 
-$VERS="11282018";
+$VERS="08102019";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
     (e.g. ...  hpwren ~hpwren/bin/getcams-iqeye.pl hpwren-iqeye7=login:201110\@   N  7 C "Cal Fire Ramona AAB, http://hpwren.ucsd.edu a2")
   
   Now camera control dictated by cam_params file, format of which is:
-  #NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONE_MINUTE_ONLY:CAPTURES/MINUTE
+  #NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE
   #  hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
       |             |               | |  |                                                | |Captures/minute
-      |             |               | |  |                                                |0=>Run_forever/1=>Run_one_minute then exit
+      |             |               | |  |                                                |0=>Run_forever/1=>Run_once then exit
       |             |               | |  |Label                                           |Run_once used for debugging
       |             |               | |Startup delay seconds
       |             |               |Type (c=color m=infrared)
@@ -19,12 +19,12 @@ $VERS="11282018";
       |camera name (also IP host basename)
 
   Above parameters read in by run_cameras (parent script) and passed to this program as command line args:
-    (e.g. getcams-iqeye.pl $CAMERA $TYPE $STARTUP_DELAY $LABEL $RUN_ONE_MINUTE_ONLY $Camera_fetches_Per_Minute)
+    (e.g. getcams-iqeye.pl $CAMERA $TYPE $STARTUP_DELAY $LABEL $RUN_ONCE $Camera_fetches_Per_Minute)
 
   Current version of code 
      1) fetches camera image 
      2) reformats image to multiple formats and diffs
-     3) updates destination target => /Data/archive/incoming/cameras
+     3) updates destination target => /Data/archive/incoming/cameras (local file system or remote via s3cmd)
      4) supports ongoing captures and adjustable captures per minute ($CPM) via cam_params with credentials from cam_access 
      5) logs to /var/local/hpwren/log/getcams-xxx-$CAMERA.log (start, fetchs, fails, exit)
 
@@ -46,9 +46,21 @@ $PPMLABEL="/usr/bin/ppmlabel";
 
 $HOME="/home/hpwren";
 
-# Passed in from run_cameras export
+# Passed in from run_cameras export ... 
 $DBG = 0; 
 $DBG = "$ENV{DBG}" ;
+$CEPH = "$ENV{CEPH}" ;
+$POSIX = "$ENV{POSIX}" ;
+
+$S3CMD = "$ENV{S3CMD}" ;
+$S3CFG = "$ENV{S3CFG}" ;
+$S3ARGS = "$ENV{S3ARGS}" ;
+
+#Above inherited from runcams ...
+#S3CMD="/usr/bin/s3cmd"
+#S3CFG="$HOME/.s3cfg-xfer"
+#S3ARGS="-c $S3CFG --no-check-md5"
+
 $PATH = "$ENV{PATH}" ;
 $HPATH="$HOME/bin/getcams";
 $LOGS = "/var/local/hpwren/log";
@@ -77,7 +89,7 @@ if($STARTUP_DELAY ne "0"){sleep($STARTUP_DELAY);}
 $LABEL=$ARGV[3];
 if($LABEL eq ""){$LABEL="-";}
 $LABEL =~ s/"//g; #Remove embedded quotes from label
-$RUN_ONE_MINUTE=$ARGV[4]; #This is the run_once flag from cam_params
+$RUN_ONCE=$ARGV[4]; #This is the run_once flag from cam_params
 $CPM=$ARGV[5];
 # Added 6th arg to support custom curl addressing (e.g. for MPO and some SMER???)
 $URL=$ARGV[6];
@@ -112,23 +124,33 @@ $ID="$fileName\[$$\]:";
 if ($DBG) { print "\n\t$dtstamp: $filename: [$$] Running $progname  0=$ARGV[0] 1=$ARGV[1] 2=$ARGV[2] \n\t3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n" ; }
 print $FH "$dtstamp: $ID Running v$VERS $progname  0=$ARGV[0] 1=$ARGV[1] 2=$ARGV[2] 3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n";
 
+unless ( $POSIX || $CEPH ) {
+    if ($DBG) { print "\n\t$dtstamp: $filename: [$$] neither CEPH nor POSIX is set, you must set one in run_cameras, exiting\n\t3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n" ; }
+    die "Neither CEPH nor POSIX is set, exiting";
+}
+if ( $CEPH ) {
+    unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $HOME\n"; }
+}
+
 #Fetch credentials from access file "cam_access"
 # Format:
 #    NAME:LOGIN:PASSWORD
-#    hpwren-iqeye7:login:201110
-#    testcam-iqueye:login:201110
+#    hpwren-iqeye7:login:123456
+#    testcam-iqueye:login:123456
+#    bm-e-mobo:login:200610:   (and NOT bm-e-mobo-c or bm-e-mobo-m !)
 # Note, if cam_access changes, run_cameras will restart this script
 
 open FILE, '<', $PW or die "File $PW not found - $!\n";
 while (<FILE>) {
     chomp;
     my @elements = split /:/, $_;
-    next unless $elements[0] eq $CAMERA;
+    next unless $elements[0] eq $HOST;   # Cameras listed by computer basenames in  "cam_access"
     $FOUND= "1";
     $LOGIN = $elements[1];
     $PWD = $elements[2];
 }
 close FILE;
+
 $CREDS=" -u $LOGIN:$PWD ";
 
 if ( $FOUND ne "1" ) {
@@ -142,7 +164,7 @@ if ($LOGIN eq '') {
 }
 
 if ($DBG) {
-    print "\tRUN_ONE_MINUTE = $RUN_ONE_MINUTE, ";
+    print "\tRUN_ONCE = $RUN_ONCE, ";
     print "CPM = $CPM, ";
     print "WAIT_TIME = $period, ";
     print "LOGIN = $LOGIN, ";
@@ -169,10 +191,12 @@ sub UpdateTimeStamp {
     $oldyear=$oldyear+1900;
     $oldmon++;
     $olddstamp=sprintf"%.4d%.2d%.2d",$oldyear,$oldmon,$oldmday;
-    if ( ! -d "$ADIR/$CAMERA/large/$dstamp/$APTAG" ) {  
-        if ($DBG) { print "\t$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null\n" ; }
-        system("$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null");
-        #system("$MKDIR -p $ADIR/$CAMERA/small/$dstamp/$APTAG 2> /dev/null");  
+    if($POSIX){
+        if ( ! -d "$ADIR/$CAMERA/large/$dstamp/$APTAG" ) {  
+            if ($DBG) { print "\t$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null\n" ; }
+            system("$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null");
+            #system("$MKDIR -p $ADIR/$CAMERA/small/$dstamp/$APTAG 2> /dev/null");  
+        }
     }
 } #End UpdateTimeStamp
 
@@ -182,7 +206,7 @@ system("$MKDIR -p $TDIR/$CAMERA 2> /dev/null");
 my $i = 0;
 my $start_time = time();
 
-# Start outer while loop ... do just one cycle (if RUN_ONE_MINUTE is true) otherwise run continuously
+# Start outer while loop ... do just one cycle (if RUN_ONCE is true) otherwise run continuously
 while ( 'true' ) {
     $ITERATIONS=1;
     while ($ITERATIONS <= $CPM) {# Start inner while loop, repeat CPM times
@@ -213,35 +237,68 @@ while ( 'true' ) {
                 system("(
                     $PNMARITH -diff $TDIR/$CAMERA/temp.ppm $TDIR/$CAMERA/temp-old.ppm > $TDIR/$CAMERA/tempdiff.ppm &&    # these commands continue only if preceeding succeeded
                     $PNMARITH -diff $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/temp175-old.ppm > $TDIR/$CAMERA/tempdiff175.ppm && 
-                    $CONVERT -quality 70 $TDIR/$CAMERA/tempdiff.ppm $CDIR/$CAMERA-diff.jpg && 
-                    $CONVERT -quality 70 $TDIR/$CAMERA/tempdiff175.ppm $CDIR/$CAMERA-diff175.jpg; 
+                    $CONVERT -quality 70 $TDIR/$CAMERA/tempdiff.ppm $TDIR/$CAMERA/$CAMERA-diff.jpg && 
+                    $CONVERT -quality 70 $TDIR/$CAMERA/tempdiff175.ppm $TDIR/$CAMERA/$CAMERA-diff175.jpg; 
                 )");
+                if ($POSIX){
+                    copy "$TDIR/$CAMERA/$CAMERA-diff.jpg", "$CDIR/$CAMERA-diff.jpg" or
+                        print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA-diff.jpg $CDIR/$CAMERA-diff.jpg failed\n";  
+                    copy "$TDIR/$CAMERA/$CAMERA-diff175.jpg", "$CDIR/$CAMERA-diff175.jpg" or
+                        print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA-diff175.jpg $CDIR/$CAMERA-diff-175.jpg failed\n";  
+                }
+
+                if ($CEPH){
+                    system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/");
+                }
             }
             system("(
-                $CONVERT -quality 70 $TDIR/$CAMERA/temp175.ppm $CDIR/$CAMERA-175.jpg &&      #These commands continue only is preceeding succeeded
-                $CONVERT -quality 70 $TDIR/$CAMERA/temp640.ppm $CDIR/$CAMERA-640.jpg &&
+                $CONVERT -quality 70 $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/$CAMERA-175.jpg &&      #These commands continue only is preceeding succeeded
+                $CONVERT -quality 70 $TDIR/$CAMERA/temp640.ppm $TDIR/$CAMERA/$CAMERA-640.jpg &&
                 $CONVERT $TDIR/$CAMERA/temp.ppm $TDIR/$CAMERA/temp2.jpg; 
             )");
             copy  "$TDIR/$CAMERA/temp2.jpg", "$TDIR/$CAMERA/$CAMERA.jpg" or  
-                print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/temp.jpg $TDIR/$CAMERA/$CAMERA.jpg failed\n";  
-            copy  "$TDIR/$CAMERA/$CAMERA.jpg", "$ADIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg" or 
-                print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA.jpg $ADIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg failed\n"; 
-            system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $CDIR/$CAMERA.jpg");
-        } else {  
-# No image available ... $R != 0
-            if ($DBG) { print "\tFetch failed, R = $R\n"; }
-            print $FH "$dtstamp: $ID Fetch failed, R = $R\n";
-            if ($DBG) { print "\tsystem(\"cp -f $TVS $CDIR/$CAMERA-175.jpg\");  \n\t"; }
-            copy  "$TVS", "$CDIR/$CAMERA-175.jpg" or 
-                print $FH "$dtstamp: $ID copy $TVS $CDIR/$CAMERA-175.jpg failed\n"; 
+                print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/temp2.jpg $TDIR/$CAMERA/$CAMERA.jpg failed\n";  
+            if ($POSIX){
+                copy "$TDIR/$CAMERA/$CAMERA-175.jpg", "$CDIR/$CAMERA-175.jpg" or 
+                        print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA-175.jpg $CDIR/$CAMERA-175.jpg failed\n";  
+                copy "$TDIR/$CAMERA/$CAMERA-640.jpg", "$CDIR/$CAMERA-640.jpg" or 
+                        print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA-640.jpg $CDIR/$CAMERA-640.jpg failed\n";  
+                copy  "$TDIR/$CAMERA/$CAMERA.jpg", "$ADIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg" or 
+                    print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA.jpg $ADIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg failed\n"; 
+                system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $CDIR/$CAMERA.jpg");
+            }
+            if ($CEPH){
+                if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/\");  \n\t"; }
+                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/");
+                if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
+                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
+                # Replicate above archive copy lines to s3://recent
+                if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
+                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
+                system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
+                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
+            }
+        
+        } else {  # No image available ... $R != 0
+                if ($DBG) { print "\tFetch failed, R = $R\n"; }
+                print $FH "$dtstamp: $ID Fetch failed, R = $R\n";
+                if ($POSIX){
+                    if ($DBG) { print "\tcopy $TVS, $CDIR/$CAMERA-175.jpg; \n\t"; }
+                    copy  "$TVS", "$CDIR/$CAMERA-175.jpg" or 
+                        print $FH "$dtstamp: $ID copy $TVS $CDIR/$CAMERA-175.jpg failed\n"; 
+                }
+                if ($CEPH){
+                    system("$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg");
+                }
         }
+        ### Might need to reduce WAIT_TIME below by 1 second
         $WAIT_TIME= ($start_time + $period * ++$i) - time() ; ##
         if ($DBG) { print "\tSleeping $WAIT_TIME seconds ...\n"; }
         sleep($WAIT_TIME);
         last if ($ITERATIONS == $CPM ); 
         $ITERATIONS++;
     } # End inner while loop ... Runs $CPM times
-    last if ($RUN_ONE_MINUTE || $DBG);  #Run for 1 cycle (1 or more fetches over a 1 minute period) then exit
+    last if ($RUN_ONCE || $DBG);  #Run for 1 cycle (1 or more fetches over a 1 minute period) then exit
 } # End outer while loop
 
 if ($DBG) { printf "\t$progname [$$] exiting at $dtstamp\n" }

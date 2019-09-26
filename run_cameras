@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v112818"
+version="v081119"
 #
 # Will be managed by systemctl start/stop/restart when in production mode:
 #	Start=/home/hpwren/bin/run_cameras -I
@@ -51,6 +51,31 @@ export HOME
 PATH="$HOME/bin/getcams:$PATH"
 export PATH
 
+# EdgeFS storage utilized via S3 (and maybe later S3X) 
+# EdgeFS storage pools: August 2019 3 tiers  
+#   /latest/$CAM - Tier-1    2x4 replicas        s3://latest
+#   /recent/$CAM - Tier-2    2x2 replicas       s3://recent
+#   /archive/$CAM - Tier-3   2+1=3 replicas  s3://archive
+
+S3CMD="/usr/bin/s3cmd"
+S3CFG="$HOME/.s3cfg-xfer"
+S3ARGS="-c $S3CFG --no-check-md5 --quiet"
+export S3CMD
+export S3CFG
+export S3ARGS
+
+### NOTE!
+# Set preferred file system default before running as service !
+# Set during testing via command line args -C and/or -P
+# CEPH variable means distributed object store usage, currently EdgeFS
+# POSIX variable means hierarchical file system usage, could be local or NFS 
+# Use one or the other
+
+CEPH=1
+export CEPH
+POSIX=0
+export POSIX
+
 epath="$HOME/bin/getcams"
 params="$epath/cam_params"
 access="$epath/cam_access"
@@ -72,7 +97,6 @@ STOP=false
 cam_param_date=$(stat  --printf %Y $params)
 cam_access_date=$(stat --printf %Y $access)
 tstamp=$(date +"%Y%m%d.%H%M%S")
-
 debug_runs=5		#For debug only, run n iterations ...
 rescan_delay=60  #Time between re-reading of cam_param file
 cam_delay=1  #Delay between reading each line of cam_params (and checking or restarting getcams-??? processes)
@@ -85,11 +109,14 @@ printf "$tstamp: $(basename $0)[$$]: Starting $(basename $0) $* ..." >> $log
 printf "\n" >> $log
 logger -p notice -- "$(basename $0)[$$] was started: $@"
 
-while getopts "vxdDIXR" opt; do
+while getopts "vxCdDIPXR" opt; do
     case "$opt" in
     v) set -v
         ;;
     x) set -x
+        ;;
+    C)  CEPH=1
+	export CEPH
         ;;
     d)  DBG=1
         ;;
@@ -97,6 +124,9 @@ while getopts "vxdDIXR" opt; do
 	export DBG
         ;;
     I)  INITIAL=true
+        ;;
+    P)  POSIX=1
+	export POSIX
         ;;
     R)  INITIAL=true
 	RESTART=true
@@ -182,7 +212,7 @@ trap 'finish $LINENO $BASH_COMMAND' EXIT 1 2 3 6
 
 while [ true ]  
 do
-	((i++))
+    loop=$((loop + 1))
 	echo "Run_cameras Loop $loop"
 
 	#Fetch camera paramaters from "cam_params" for every enabled camera
@@ -201,6 +231,10 @@ do
 		if [[ ${line[0]:0:1} == "#" ]];
 		then
 			continue    #Skip lines that are commented out 
+		fi
+		if [ -z "$line" ];
+		then
+			continue    #Skip lines that are blank
 		fi
 		echo "Processing: ${line[*]}"
 		cam=${line[0]}

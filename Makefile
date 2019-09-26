@@ -3,7 +3,13 @@
 # Place getcams.service in confirmed location
 # Once debugged, add and commit
 #
-ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras t tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile
+# Version 042719
+#
+## Set filesystem type for testing
+## Once tested, set/update default in run_cameras
+
+#
+ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras t tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile .s3cfg-xfer
 RUNFILES=getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl tvpattern-small.jpg run_cameras hpwren8-400.png Makefile
 
 ARCHDIR=/Data/archive
@@ -47,6 +53,8 @@ all: install $(CONTROLFILES)
 	cp $(CONTROLFILES) $(RUNDIR)
 	chown hpwren:hpwren $(RUNDIR)/*
 	cp getcams.service /usr/lib/systemd/system
+	cp .s3cfg-xfer ~hpwren
+	chown hpwren:hpwren  ~hpwren/.s3cfg-xfer 
 
 enable: getcams.service 
 	sudo  -u hpwren systemctl enable getcams.service
