@@ -1,15 +1,18 @@
 [default]
-access_key = YDOY30V11Q6Y8RG5NMGC
+access_key = 382PSHWYMFK9WYA8Z2ZX
 access_token =
-host_base = s3.apps.hpwren.ucsd.edu
+host_base = s3x-sdsc.apps.hpwren.ucsd.edu
 host_bucket =
-secret_key = OPcGpoCywT0edC5NP7a8dIhj4DHiU7QhcTPhyxiV
+secret_key = ySTE6I2SmcTCRNWci6CkcFQ23PuhLKuB8N2ZqHLA
 use_https = True
-website_endpoint =  https://s3.apps.hpwren.ucsd.edu
-acl_public = True
+#website_endpoint =  https://s3.apps.hpwren.ucsd.edu
+#acl_public = True
 human_readable_sizes = True
 progress_meter = False
 preserve_attrs = True
 skip_existing = True
-delete_removed = False
+delete_removed = False 
+signature_v2 = True
+multipart_chunk_size_mb = 5000
+multipart_max_chunks = 10000
 

@@ -287,6 +287,14 @@ while ( 'true' ) {
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
                 system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
                 system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
+
+                ### Extra measures attempting to prevent hangs of s3cmd put to //latest
+                print $FH "$dtstamp: $ID system(\"$S3CMD $S3ARGS rm s3://latest/$CAMERA.jpg\");\n";
+                system("$S3CMD $S3ARGS rm s3://latest/$CAMERA.jpg");
+                sleep(1);
+                ###
+
+
                 system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
             }
         } else {  
