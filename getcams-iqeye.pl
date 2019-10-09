@@ -1,15 +1,16 @@
 #!/usr/bin/perl
 # getcams-iqeye.pl
 
-$VERS="08102019";
+$VERS="10092019";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
     (e.g. ...  hpwren ~hpwren/bin/getcams-iqeye.pl hpwren-iqeye7=login:201110\@   N  7 C "Cal Fire Ramona AAB, http://hpwren.ucsd.edu a2")
   
   Now camera control dictated by cam_params file, format of which is:
-  #NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE
-  #  hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
+  #CAMNAME:DRIVER:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE:URL (optional)
+  #  hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1:URL (optional)
+      |             |               | |  |                                                | |  | Optional custom URL, or DEFAULT
       |             |               | |  |                                                | |Captures/minute
       |             |               | |  |                                                |0=>Run_forever/1=>Run_once then exit
       |             |               | |  |Label                                           |Run_once used for debugging
@@ -28,6 +29,9 @@ $VERS="08102019";
      4) supports ongoing captures and adjustable captures per minute ($CPM) via cam_params with credentials from cam_access 
      5) logs to /var/local/hpwren/log/getcams-xxx-$CAMERA.log (start, fetchs, fails, exit)
 
+  Test in isolation using 
+  sudo -u hpwren ./getcams-iqeye.pl hpwren-iqeye7 c 0 "Cal Fire Ramona AAB, http://hpwren.ucsd.edu c0" 0 1 DEFAULT
+
 =end comment
 =cut
 
@@ -35,10 +39,18 @@ use File::Basename;
 use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
+use Proc::Reliable;
+
+my $cmd;
+my $FH;
+my $timeout =  20;
+
+# sub SystemTimer routine moved to end of code
 
 # Program Paths
 $CONVERT="/usr/bin/convert";
 $CURL="/usr/bin/curl";
+$COPTS=" --connect-timeout 5 --max-time 15 --retry 4 ";
 $MKDIR="/usr/bin/mkdir";
 $PNMARITH="/usr/bin/pnmarith";
 $PNMSCALE="/usr/bin/pnmscale";
@@ -57,20 +69,23 @@ $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
 
 #Above inherited from runcams ...
-#S3CMD="/usr/bin/s3cmd"
-#S3CFG="$HOME/.s3cfg-xfer"
-#S3ARGS="-c $S3CFG --no-check-md5"
+
+### Uncomment below for local s3cmd debugging ...
+#$CEPH = 1;
+#$S3CMD="/usr/bin/s3cmd";
+#$S3CFG="$HOME/.s3cfg-xfer";
+#$S3ARGS="-c $S3CFG --no-check-md5 ";
 
 $PATH = "$ENV{PATH}" ;
 $HPATH="$HOME/bin/getcams";
 $LOGS = "/var/local/hpwren/log";
 
-chdir("/home/hpwren/bin/getcams") or die "cannot change: $!\n";
-
 $|++;  # Flush IO buffer at every print
 
 unless(-e $HPATH or mkdir -p $HPATH ) { die "Unable to create $HPATH\n"; }
 unless(-e $LOGS or mkdir -p $LOGS ) { die "Unable to create $LOGS\n"; }
+chdir("$HPATH") or die "cannot change: $!\n";
+
 
 $TVS = "$HPATH/tvpattern-small.jpg";
 $PW = "$HPATH/cam_access";  
@@ -168,6 +183,7 @@ if ($DBG) {
     print "CPM = $CPM, ";
     print "WAIT_TIME = $period, ";
     print "LOGIN = $LOGIN, ";
+    print "URL = $URL, ";
     print "PWD = $PWD\n";
 }
 
@@ -213,10 +229,14 @@ while ( 'true' ) {
         UpdateTimeStamp();
         if ($DBG) {
             print "\tcapture $ITERATIONS of $CPM \n";
-            print "\tsystem(\"$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
+            print "\tsystem(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
         }
-        print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
-        $R=system("$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
+
+        # OLD: print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
+        # OLD: $R=system("$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
+        $cmd = "$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null";
+        $R = SystemTimer( $cmd ); # Using SystemTimer() with alarm code to interupt potential hangs
+
         if($R == 0){
             if ($DBG) { print "\tFetch succeeded, R = $R, dtstamp = $dtstamp, LABEL = $LABEL\n"; }
             if ( -s "$TDIR/$CAMERA/temp.ppm" ) {  # File exists and is not empty
@@ -251,8 +271,9 @@ while ( 'true' ) {
                     system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/");
                 }
             }
+            #Serial system commands below continue only if preceeding succeeded
             system("(
-                $CONVERT -quality 70 $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/$CAMERA-175.jpg &&      #These commands continue only is preceeding succeeded
+                $CONVERT -quality 70 $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/$CAMERA-175.jpg &&      
                 $CONVERT -quality 70 $TDIR/$CAMERA/temp640.ppm $TDIR/$CAMERA/$CAMERA-640.jpg &&
                 $CONVERT $TDIR/$CAMERA/temp.ppm $TDIR/$CAMERA/temp2.jpg; 
             )");
@@ -276,12 +297,14 @@ while ( 'true' ) {
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
                 system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
                 system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
-                ### Extra measures attempting to prevent hangs of s3cmd put to //latest
-                print $FH "$dtstamp: $ID system(\"$S3CMD $S3ARGS rm s3://latest/$CAMERA.jpg\");\n";
-                system("$S3CMD $S3ARGS rm s3://latest/$CAMERA.jpg");
-                sleep(1);
-                ###
-                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
+
+                ### Added SystemTimer() with alarm code to interupt potential hangs
+                # OLD:  system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
+                $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/";
+                if ($DBG) { print "\tsystem(\"$cmd\"); \n\t"; }
+                SystemTimer( $cmd );
+                ### Wrapping s3cmd in a timer ...
+
             }
         
         } else {  # No image available ... $R != 0
@@ -310,3 +333,15 @@ if ($DBG) { printf "\t$progname [$$] exiting at $dtstamp\n" }
 print $FH "$dtstamp: $ID Finished $progname\n";
 close $FH;
 
+# SystemTimer routine used to prevent hanging system calls by using an internal timeout mechanism
+sub SystemTimer {
+    my ( $command ) = @_;
+    print $FH "$dtstamp: $ID Executing system(\"$command\");\n";
+    my $proc = Proc::Reliable->new ();
+    $proc->maxtime ($timeout);
+    ($stdout, $stderr, $rstatus, $msg) = $proc->run($command);
+    if ($rstatus) {
+      print $FH "$dtstamp: $ID Timeout! Status is $rstatus, stdout is $stdout, stderr is $stderr\n";
+    }
+    return $rstatus ;
+} #End SystemTimer

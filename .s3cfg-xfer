@@ -15,4 +15,4 @@ delete_removed = False
 signature_v2 = True
 multipart_chunk_size_mb = 5000
 multipart_max_chunks = 10000
-
+verbosity = ERROR

@@ -71,7 +71,8 @@ rm-n-mobo:getcams-mobo.pl:c:0:"Red Mountain North, http\://hpwren.ucsd.edu c0":0
 #69bravo-s-mobo:getcams-mobo.pl:m:0:"LA Co Helibase 69 South, http\://hpwren.ucsd.edu c0":0:1:
 #69bravo-w-mobo:getcams-mobo.pl:c:0:"LA Co Helibase 69 West, http\://hpwren.ucsd.edu c0":0:1:
 #69bravo-w-mobo:getcams-mobo.pl:m:0:"LA Co Helibase 69 West, http\://hpwren.ucsd.edu c0":0:1:
-69bravo-axis:getcams-axis.pl:c:0:"Boucher Hill, http\://hpwren.ucsd.edu c0":0:1:
+69bravo-e-axis:getcams-axis.pl:c:0:"LA Co Helibase 69 East, http\://hpwren.ucsd.edu c0":0:1:
+#69bravo-w-axis:getcams-axis.pl:c:0:"LA Co Helibase 69 West, http\://hpwren.ucsd.edu c0":0:1:
 bh-e-axis:getcams-axis.pl:c:0:"Boucher Hill, http\://hpwren.ucsd.edu c0":0:1:
 #bh-w-axis:getcams-axis.pl:c:0:"Boucher Hill, http\://hpwren.ucsd.edu c0":0:1:
 #bi-axis:getcams-axis.pl:c:0:"Birch Hill, http\://hpwren.ucsd.edu c0":0:1:

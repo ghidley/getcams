@@ -1,24 +1,24 @@
 #!/usr/bin/perl
 # getcams-mobo.pl
-
-$VERS="08202019";
+# 
+$VERS="10092019";
 =begin comment
-  getcams-mobo.pl -- camera image fetch and processing script for mobo cameras
-  Based on getcamsmoboanimations6.pl which was crontab driven
+  getcams-mobo.pl -- camera image fetch and processing script for Mobotix cameras
   
-  Now camera control dictated by cam_params file, format of which is:
-  #NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE
-  #  hpwren-mobo7:getcams-mobo.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
-      |             |               | |  |                                                | |Captures/minute
-      |             |               | |  |                                                |0=>Run_forever/1=>Run once then exit
-      |             |               | |  |Label                                           |Run_once used for debugging
+  Camera infomation and control driven by cam_params file, format of which is:
+  #CAMNAME:DRIVER:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE:URL (optional)
+  #  hpwren-mobo7:getcams-mobo.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1:URL (optional)
+      |             |               | |  |                                              | |  | DEFAULT, or optional URL
+      |             |               | |  |                                              | |Captures/minute
+      |             |               | |  |                                              |0=>Run_forever/1=>Run once then exit
+      |             |               | |  |Label                                         |Run_once used for debugging
       |             |               | |Startup delay seconds
       |             |               |Type (c=color m=infrared)
       |             |fetch script 
       |camera name (also IP host basename)
 
   Above parameters read in by run_cameras (parent script) and passed to this program as command line args:
-    (e.g. getcams-mobo.pl $CAMERA $TYPE $STARTUP_DELAY $LABEL $RUN_ONCE $Camera_fetches_Per_Minute)
+    (e.g. getcams-mobo.pl $CAMERA $TYPE $STARTUP_DELAY $LABEL $RUN_ONCE $Camera_fetches_Per_Minute) $URL
 
   Current version of code 
      1) fetches camera image 
@@ -27,6 +27,10 @@ $VERS="08202019";
      4) supports ongoing captures and adjustable captures per minute ($CPM) via cam_params with credentials from cam_access 
      5) logs to /var/local/hpwren/log/getcams-xxx-$CAMERA.log (start, fetchs, fails, exit)
 
+    To debug individual getcams script at terminal, uncomment  (e.g. disinherit)  S3 vars below and  use
+
+        sudo -u hpwren ./getcams-mobo.pl rm-e-mobo c 0 "Red Mountain East, http://hpwren.ucsd.edu c0" 0 1 DEFAULT
+
 =end comment
 =cut
 
@@ -34,11 +38,30 @@ use File::Basename;
 use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
+use Proc::Reliable;
+
+my $cmd;
+my $FH ; 
+my $timeout = 20;
+
+# SystemTimer routine used to prevent hanging system calls by using an internal timeout mechanism
+sub SystemTimer {
+    my ( $command ) = @_;
+    print $FH "$dtstamp: $ID Executing system(\"$command\");\n";
+    my $proc = Proc::Reliable->new ();
+    $proc->maxtime ($timeout);
+    ($stdout, $stderr, $rstatus, $msg) = $proc->run($command);
+    if ($rstatus) {
+      print $FH "$dtstamp: $ID Timeout! Status is $rstatus, stdout is $stdout, stderr is $stderr\n";
+    }
+    return $rstatus ;
+} #End SystemTimer
 
 
 # Program Paths
 $CONVERT="/usr/bin/convert";
 $CURL="/usr/bin/curl";
+$COPTS=" --connect-timeout 5 --max-time 15 --retry 4 ";
 $MKDIR="/usr/bin/mkdir";
 $PNMARITH="/usr/bin/pnmarith";
 $PNMSCALE="/usr/bin/pnmscale";
@@ -58,21 +81,22 @@ $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
 
 #Above inherited from runcams ...
-##S3CMD="/usr/bin/s3cmd"
-##S3CFG="$HOME/.s3cfg-xfer"
-##S3ARGS="-c $S3CFG --no-check-md5"
 
+### Uncomment below for local s3cmd debugging ...
+#$CEPH = 1;
+#$S3CMD="/usr/bin/s3cmd";
+#$S3CFG="$HOME/.s3cfg-xfer";
+#$S3ARGS="-c $S3CFG --no-check-md5 ";
 
 $PATH = "$ENV{PATH}" ;
 $HPATH="$HOME/bin/getcams";
 $LOGS = "/var/local/hpwren/log";
 
-chdir("/home/hpwren/bin/getcams") or die "cannot change: $!\n";
-
 $|++;  # Flush IO buffer at every print
 
 unless(-e $HPATH or mkdir -p $HPATH) { die "Unable to create $HPATH\n"; }
 unless(-e $LOGS or mkdir -p $LOGS) { die "Unable to create $LOGS\n"; }
+chdir("$HPATH") or die "cannot change: $!\n";
 
 $TVS = "$HPATH/tvpattern-small.jpg";
 $PW = "$HPATH/cam_access";  
@@ -86,9 +110,9 @@ die "Insufficient args, got $#ARGV, need 6\n" if ( $#ARGV != 6 ) ;
 $CAMERA=$ARGV[0]; 
 $HOST=$CAMERA;
 $TYPE=$ARGV[1];    #c or n
-### Mobo change
+## Mobo change
 $CAMERA="$CAMERA-$TYPE";
-###
+##
 $STARTUP_DELAY=$ARGV[2];
 if($STARTUP_DELAY ne "0"){sleep($STARTUP_DELAY);} 
 $LABEL=$ARGV[3];
@@ -100,9 +124,9 @@ $CPM=$ARGV[5];
 $URL=$ARGV[6];
 
 if ( $URL eq "DEFAULT" ) {
-    ### Mobo change
+    ## Mobo change
     $HTTP="http://$HOST/cgi-bin/image.jpg?imgprof=Full-$TYPE";
-    ###
+    ##
 } else {
     $HTTP=$URL;
 }
@@ -124,7 +148,7 @@ if (! -e $logfile ) {
     open OFH, ">$logfile" or die "Can't create $logfile"; 
     close(OFH);
 }
-open(my $FH, '>>', $logfile) or die "Could not open file '$logfile' $!";
+open( $FH, '>>', $logfile) or die "Could not open file '$logfile' $!";
 
 my $filename = basename($0, ".pl");
 $ID="$fileName\[$$\]:"; 
@@ -151,9 +175,9 @@ open FILE, '<', $PW or die "File $PW not found - $!\n";
 while (<FILE>) {
     chomp;
     my @elements = split /:/, $_;
-    ### Mobo change
+    ## Mobo change
     next unless $elements[0] eq $HOST; #CAM name same as host basename in cam_access
-    ###
+    ##
     $FOUND= "1";
     $LOGIN = $elements[1];
     $PWD = $elements[2];
@@ -169,7 +193,7 @@ if ( $FOUND ne "1" ) {
 }
 
 if ($LOGIN eq '') {
-    if ($DBG) { print "\n\t$dtstamp: $filename: [$$] login/password fileds are empty, assuming none needed\n\t3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n" ; }
+    if ($DBG) { print "\n\t$dtstamp: $filename: [$$] login/password fields are empty, assuming none needed\n\t3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n" ; }
     $CREDS='';
 }
 
@@ -178,6 +202,7 @@ if ($DBG) {
     print "CPM = $CPM, ";
     print "WAIT_TIME = $period, ";
     print "LOGIN = $LOGIN, ";
+    print "URL = $URL, ";
     print "PWD = $PWD\n";
 }
 
@@ -222,10 +247,12 @@ while ( 'true' ) {
         UpdateTimeStamp();
         if ($DBG) {
             print "\tcapture $ITERATIONS of $CPM \n";
-            print "\tsystem(\"$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
+            print "\tsystem(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
         }
-        print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
-        $R=system("$CURL -s $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
+        #print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
+        $cmd = "$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null";
+        $R = SystemTimer( $cmd ); # Using SystemTimer() with alarm code to interupt potential hangs
+        #$R=system("$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
         if($R == 0){
             if ($DBG) { print "\tFetch succeeded, R = $R, dtstamp = $dtstamp, LABEL = $LABEL\n"; }
             if ( -s "$TDIR/$CAMERA/temp.ppm" ) {  # File exists and is not empty
@@ -260,9 +287,10 @@ while ( 'true' ) {
                     print $FH "$dtstamp: $ID system(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/\");\n";
                     system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/");
                 }
-            }
+            }   
+            #Serial system commands continue only if preceeding succeeded
             system("(
-                $CONVERT -quality 70 $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/$CAMERA-175.jpg &&      #These commands continue only is preceeding succeeded
+                $CONVERT -quality 70 $TDIR/$CAMERA/temp175.ppm $TDIR/$CAMERA/$CAMERA-175.jpg &&   
                 $CONVERT -quality 70 $TDIR/$CAMERA/temp640.ppm $TDIR/$CAMERA/$CAMERA-640.jpg &&
                 $CONVERT $TDIR/$CAMERA/temp.ppm $TDIR/$CAMERA/temp2.jpg; 
             )");
@@ -292,17 +320,15 @@ while ( 'true' ) {
                 system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
                 system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
 
-                ### Extra measures attempting to prevent hangs of s3cmd put to //latest
-                print $FH "$dtstamp: $ID system(\"$S3CMD $S3ARGS rm s3://latest/$CAMERA.jpg\");\n";
-                system("$S3CMD $S3ARGS rm s3://latest/$CAMERA.jpg");
-                sleep(1); 
-                ###
-                
-                print $FH "$dtstamp: $ID system(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg  s3://latest/\");\n";
-                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
+                ### Added SystemTimer() with alarm code to interupt potential hangs
+                #PREVIOUS:  system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
+                $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/";
+                if ($DBG) { print "\tsystem(\"$cmd\"); \n\t"; }
+                SystemTimer( $cmd );
+                ### Wrapping s3cmd in a timer ...
+
             }
-        } else {  
-# No image available ... $R != 0
+        } else {  # No image available ... $R != 0
             if ($DBG) { print "\tFetch failed, R = $R\n"; }
             print $FH "$dtstamp: $ID Fetch failed, R = $R\n";
             if ($POSIX){
@@ -316,7 +342,7 @@ while ( 'true' ) {
             }
         }
         $WAIT_TIME= ($start_time + $period * ++$i) - time() ; ##
-        print $FH "$dtstamp: $ID Sleeping, WAIT_TIME = $WAIT_TIME, ITERATIONS = $ITERATIONS\n";
+        #print $FH "$dtstamp: $ID Sleeping, WAIT_TIME = $WAIT_TIME, ITERATIONS = $ITERATIONS\n";
         if ($DBG) { print "\tSleeping $WAIT_TIME seconds ...\n"; }
         sleep($WAIT_TIME);
         last if ($ITERATIONS == $CPM ); 
