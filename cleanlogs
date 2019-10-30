@@ -1,0 +1,16 @@
+#!/bin/bash 
+
+# Stop runcams; clear logs; start getcams
+# Run via cron after midnight
+
+LOGDIR="/var/local/hpwren/log"
+GETCAMSDIR="~hpwren/bin/getcams"
+
+$GETCAMSDIR/run_cameras -X
+sleep 5
+for i in $LOGDIR/*.log ; do cp -f $i $LOGDIR/old; cp /dev/null $i; done
+sleep 5
+cp $LOGDIR/runcamlog $LOGDIR/old
+cp /dev/null $LOGDIR/runcamlog
+$GETCAMSDIR/run_cameras -I &
+
