@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-iqeye.pl
 
-$VERS="10092019";
+$VERS="11052019";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
@@ -43,7 +43,7 @@ use Proc::Reliable;
 
 my $cmd;
 my $FH;
-my $timeout =  20;
+my $timeout =  45;
 
 # sub SystemTimer routine moved to end of code
 
@@ -100,7 +100,6 @@ $CAMERA=$ARGV[0];
 $HOST=$CAMERA;
 $TYPE=$ARGV[1];    #c or n
 $STARTUP_DELAY=$ARGV[2];
-if($STARTUP_DELAY ne "0"){sleep($STARTUP_DELAY);} 
 $LABEL=$ARGV[3];
 if($LABEL eq ""){$LABEL="-";}
 $LABEL =~ s/"//g; #Remove embedded quotes from label
@@ -218,6 +217,16 @@ sub UpdateTimeStamp {
 
 system("$MKDIR -p $TDIR/$CAMERA 2> /dev/null");
 
+
+# Sleep until next minute boundary
+$mytime=time();
+($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdat)=localtime($mytime);
+$min_delay = 60 - $sec;
+if($min_sdelay ne "0") {sleep($min_sdelay);}
+
+# Now add any startup delay
+if($STARTUP_DELAY ne "0") {sleep($STARTUP_DELAY);}
+
 ## Counters for sleeping between fetches
 my $i = 0;
 my $start_time = time();
@@ -268,7 +277,9 @@ while ( 'true' ) {
                 }
 
                 if ($CEPH){
-                    system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/");
+                    #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/");
+                    $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/";
+                    SystemTimer( $cmd );
                 }
             }
             #Serial system commands below continue only if preceeding succeeded
@@ -290,20 +301,24 @@ while ( 'true' ) {
             }
             if ($CEPH){
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/\");  \n\t"; }
-                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/");
+                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/");
+                $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/";
+                SystemTimer( $cmd );
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
-                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
+                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
+                $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg";
+                SystemTimer( $cmd );
                 # Replicate above archive copy lines to s3://recent
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
-                system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
+                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
+                $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg";
+                SystemTimer( $cmd );
                 system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
 
-                ### Added SystemTimer() with alarm code to interupt potential hangs
-                # OLD:  system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
+                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/";
                 if ($DBG) { print "\tsystem(\"$cmd\"); \n\t"; }
                 SystemTimer( $cmd );
-                ### Wrapping s3cmd in a timer ...
 
             }
         
@@ -316,7 +331,9 @@ while ( 'true' ) {
                         print $FH "$dtstamp: $ID copy $TVS $CDIR/$CAMERA-175.jpg failed\n"; 
                 }
                 if ($CEPH){
-                    system("$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg");
+                    #system("$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg");
+                    $cmd="$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg";
+                    SystemTimer( $cmd );
                 }
         }
         ### Might need to reduce WAIT_TIME below by 1 second
@@ -341,7 +358,7 @@ sub SystemTimer {
     $proc->maxtime ($timeout);
     ($stdout, $stderr, $rstatus, $msg) = $proc->run($command);
     if ($rstatus) {
-      print $FH "$dtstamp: $ID Timeout! Status is $rstatus, stdout is $stdout, stderr is $stderr\n";
+      print $FH "$dtstamp: $ID Timeout! Status is $rstatus, stdout is $stdout, stderr is $stderr, cmd is $command\n";
     }
     return $rstatus ;
 } #End SystemTimer

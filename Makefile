@@ -9,9 +9,8 @@
 ## Once tested, set/update default in run_cameras
 
 #
-ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras t tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile .s3cfg-xfer
-RUNFILES=getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl tvpattern-small.jpg run_cameras hpwren8-400.png Makefile
-
+ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras t tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile .s3cfg-xfer 
+RUNFILES=getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl tvpattern-small.jpg run_cameras hpwren8-400.png Makefile cleanlogs
 ARCHDIR=/Data/archive
 CDIR=$(ARCHDIR)/incoming/cameras
 DATADIR=/Data
@@ -55,6 +54,7 @@ all: install $(CONTROLFILES)
 	cp getcams.service /usr/lib/systemd/system
 	cp .s3cfg-xfer ~hpwren
 	chown hpwren:hpwren  ~hpwren/.s3cfg-xfer 
+	systemctl daemon-reload
 
 enable: getcams.service 
 	sudo  -u hpwren systemctl enable getcams.service
@@ -62,3 +62,5 @@ enable: getcams.service
 disable: getcams.service 
 	sudo  -u hpwren systemctl disable getcams.service
 
+cameras:	# Trigger running run_cameras to adjust active camera list
+	sudo -u hpwren cp $(CONTROLFILES) $(RUNDIR)

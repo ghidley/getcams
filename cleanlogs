@@ -1,16 +1,27 @@
 #!/bin/bash 
 
-# Stop runcams; clear logs; start getcams
+# Stop run_cameras; clear logs; start run_cameras
 # Run via cron after midnight
 
+LOCKDIR="/var/local/hpwren/lock"
 LOGDIR="/var/local/hpwren/log"
-GETCAMSDIR="~hpwren/bin/getcams"
+GETCAMSDIR="/home/hpwren/bin/getcams"
 
-$GETCAMSDIR/run_cameras -X
+
+if [[ -e $LOCKDIR/RUNCAM_PID ]] ;
+then
+    # Halt getcams system if running
+    was_running=1
+    $GETCAMSDIR/run_cameras -X
+fi
+
 sleep 5
-for i in $LOGDIR/*.log ; do cp -f $i $LOGDIR/old; cp /dev/null $i; done
+mv -f  $LOGDIR/*.log  $LOGDIR/runcamlog $LOGDIR/old
 sleep 5
-cp $LOGDIR/runcamlog $LOGDIR/old
-cp /dev/null $LOGDIR/runcamlog
-$GETCAMSDIR/run_cameras -I &
+
+if [[ $was_running == 1 ]] ;
+then
+    # Restart getcams system
+    $GETCAMSDIR/run_cameras -I &
+fi
 

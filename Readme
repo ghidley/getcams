@@ -5,7 +5,8 @@ Sources stored on https://github.com/ghidley/getcams
 Most development done here, then followed by  "sudo make" to install in run area
 Running "sudo make all" will also cp over vanilla control files cam_access_format and cam_params
 Password file cam_access is handled manually (and not present in git repository)
-See ./t for testing system ...
+Add hpwren crontab entry to manage log files: 
+ 1 0 * * *       ~ghidley/getcams/cleanlogs
 
 Testing start (-I) -- one fo following:
     sudo -u hpwren ~hpwren/bin/getcams/run_cameras -I
@@ -29,7 +30,7 @@ Start up in debug (-I -D) mode -- one of following:
 Design Goals
   Replicates archive*'s getcamsXXXanimations + c[12]'s updatedanimations functionality initially
   Original goal was populating c1:/Data/archive, while disabling archive* scp's and ssh's to c1
-  Revised goal is to run on c0 VM and populate ceph storage
+  Revised goal is to run on c0 VM and populate ceph or EdgeFS or POSIX storage
   Maybe in parallel, setup to run on c[12] and drop images into standard locations (emergency replacement for archive[2-5]
   Provide alternate timing mechanism not dependent on cron ... drive via boot startup 
   Could at some point also [re]populate wfe camera web site (displacing archive*)
