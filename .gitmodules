@@ -1,0 +1,3 @@
+[submodule "K8-getcams"]
+	path = K8-getcams
+	url = https://gitlab.nautilus.optiputer.net/hpwren/getcams.git
