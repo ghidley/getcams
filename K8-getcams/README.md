@@ -1,2 +1,0 @@
-# getcams containerization code
-
