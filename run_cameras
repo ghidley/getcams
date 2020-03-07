@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v102719"
+version="v01062020"
 #
 # Will be managed by systemctl start/stop/restart when in production mode:
 #	Start=/home/hpwren/bin/run_cameras -I
@@ -38,11 +38,13 @@ version="v102719"
 # done
 #
 
+# Run as user HPWREN
 HOME="/home/hpwren"
 export HOME
 PATH="$HOME/bin/getcams:$PATH"
 export PATH
 
+# EdgeFS failed to be viable for getcams ... using CEPH/POSIX as of 2020
 # EdgeFS storage utilized via S3 (and maybe later S3X) 
 # EdgeFS storage pools: August 2019 3 tiers  
 #   /latest/$CAM - Tier-1    2x4 replicas        s3://latest
@@ -59,13 +61,13 @@ export S3ARGS
 ### NOTE!
 # Set preferred file system default before running as service !
 # Set during testing via command line args -C and/or -P
-# CEPH variable means distributed object store usage, currently EdgeFS
-# POSIX variable means hierarchical file system usage, could be local or NFS 
+# S3 variable means S3 storage access
+# POSIX variable means hierarchical file system usage, could be local, CEPH or NFS 
 # Use one or the other
 
-CEPH=1
-export CEPH
-POSIX=0
+S3=0
+export S3
+POSIX=1
 export POSIX
 
 epath="$HOME/bin/getcams"
@@ -103,14 +105,14 @@ printf "$tstamp: $(basename $0)[$$]: Starting $(basename $0) $* ..." >> $log
 printf "\n" >> $log
 logger -p notice -- "$(basename $0)[$$] was started: $@"
 
-while getopts "vxCdDIPXR" opt; do
+while getopts "vxCdDIPXRS" opt; do
     case "$opt" in
     v) set -v
         ;;
     x) set -x
         ;;
-    C)  CEPH=1
-	export CEPH
+    S)  S3=1
+	export S3
         ;;
     d)  DBG=1
         ;;
@@ -130,7 +132,7 @@ while getopts "vxCdDIPXR" opt; do
     esac
 done
 
-#Redefine echo for debugging ... enabled or suppressed based on DBG status
+# Redefine echo for debugging ... enabled or suppressed based on DBG status
 echo () {
 	[[ "$DBG" ]] && builtin echo $@
 }
@@ -211,12 +213,12 @@ do
 
 	#Fetch camera paramaters from "cam_params" for every enabled camera
 	# Format:
-	#	NAME:PROGRAM:TYPE:DELAY:LABEL:RUN_ONCE:CAPTURES/MINUTE
+	#	NAME:PROGRAM:TYPE:DELAY:LABEL:RUN_ONCE:CAPTURES/MINUTE:OPTIONAL CAM-SPECIFIC URL TO USE WITH CURL:
 	#	hpwren-iqeye7:getcams-iqeye.pl:c:2:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c1":1:1
 	#	smer-tcs3-mobo:getcams-mobo.pl:c:3:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c1":1:1
 	#
-	# Note: RUN_ONCE=0 keeps getcams-???  running indefinitely, restarting as needed if getcams-??? exits 
-	# Note: RUN_ONCE=1 runs getcams-??? one time only, which results in one 1 minute camera fetch cycle of CAPTURES/MINUTE image fetches
+	# Note: RUN_ONCE=0 keeps getcams-*  running indefinitely, restarting as needed if getcams-??? exits 
+	# Note: RUN_ONCE=1 runs getcams-* one time only, which results in one 1 minute camera fetch cycle of CAPTURES/MINUTE image fetches
 
 
     #printf "\n$0:$tstamp: [Re]reading cam_params file ...\n" >> $log

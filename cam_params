@@ -7,7 +7,7 @@
 ## Disabled, unused or removed cams listed at end of file
 ##NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE:OPTIONAL CAM-SPECIFIC URL TO USE WITH CURL:
 hpwren-iqeye7:getcams-iqeye.pl:c:0:"Cal Fire Ramona AAB, http\://hpwren.ucsd.edu c0":0:1:
-hpwren-iqeye8:getcams-iqeye.pl:c:0:"La Cima, http\://hpwren.ucsd.edu c0":0:1:
+#hpwren-iqeye8:getcams-iqeye.pl:c:0:"La Cima, http\://hpwren.ucsd.edu c0":0:1:
 mpo-p200iqeye:getcams-iqeye.pl:c:0:"Palomar Observatory, 200 inch, http\://hpwren.ucsd.edu c0":0:1:'http\://p200cam.palomar.caltech.edu/now.jpg':
 #smer-gorge:getcams-iqeye.pl:c:0:"SMER Gorge, SDSU FSP http\://hpwren.ucsd.edu c0":0:1:
 rm-e-mobo:getcams-mobo.pl:c:0:"Red Mountain East, http\://hpwren.ucsd.edu c0":0:1:
@@ -50,14 +50,14 @@ hp-s-mobo:getcams-mobo.pl:c:0:"High Point South, http\://hpwren.ucsd.edu c0":0:1
 hp-s-mobo:getcams-mobo.pl:m:0:"High Point South, http\://hpwren.ucsd.edu c0":0:1:
 hp-w-mobo:getcams-mobo.pl:c:0:"High Point West, http\://hpwren.ucsd.edu c0":0:1:
 hp-w-mobo:getcams-mobo.pl:m:0:"High Point West, http\://hpwren.ucsd.edu c0":0:1:
-lo-e-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory East, http\://hpwren.ucsd.edu c0":0:1:
-lo-e-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory East, http\://hpwren.ucsd.edu c0":0:1:
-lo-n-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory North, http\://hpwren.ucsd.edu c0":0:1:
-lo-n-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory North, http\://hpwren.ucsd.edu c0":0:1:
-lo-s-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory South, http\://hpwren.ucsd.edu c0":0:1:
-#lo-s-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory South, http\://hpwren.ucsd.edu c0":0:1:
-#lo-w-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory West, http\://hpwren.ucsd.edu c0":0:1:
-#lo-w-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory West, http\://hpwren.ucsd.edu c0":0:1:
+mlo-e-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory East, http\://hpwren.ucsd.edu c0":0:1:
+mlo-e-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory East, http\://hpwren.ucsd.edu c0":0:1:
+mlo-n-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory North, http\://hpwren.ucsd.edu c0":0:1:
+mlo-n-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory North, http\://hpwren.ucsd.edu c0":0:1:
+mlo-s-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory South, http\://hpwren.ucsd.edu c0":0:1:
+#mlo-s-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory South, http\://hpwren.ucsd.edu c0":0:1:
+#mlo-w-mobo:getcams-mobo.pl:c:0:"Mt. Laguna Observatory West, http\://hpwren.ucsd.edu c0":0:1:
+#mlo-w-mobo:getcams-mobo.pl:m:0:"Mt. Laguna Observatory West, http\://hpwren.ucsd.edu c0":0:1:
 ### Following commented out for testing
 69bravo-e-mobo:getcams-mobo.pl:c:0:"LA Co Helibase 69 East, http\://hpwren.ucsd.edu c0":0:1:
 69bravo-e-mobo:getcams-mobo.pl:m:0:"LA Co Helibase 69 East, http\://hpwren.ucsd.edu c0":0:1:
@@ -83,13 +83,14 @@ bm-s-mobo:getcams-mobo.pl:m:0:"Big Black Mountain South, http\://hpwren.ucsd.edu
 bm-w-mobo:getcams-mobo.pl:c:0:"Big Black Mountain West, http\://hpwren.ucsd.edu c0":0:1:
 bm-w-mobo:getcams-mobo.pl:m:0:"Big Black Mountain West, http\://hpwren.ucsd.edu c0":0:1:
 ch-axis:getcams-axis.pl:c:0:"Coronado Hills, http\://hpwren.ucsd.edu c0":0:1:
-cowles-axis:getcams-axis.pl:c:0:"Cowles Mountain, http\://hpwren.ucsd.edu c0":0:1:
+#cowles-axis:getcams-axis.pl:c:0:"Cowles Mountain, http\://hpwren.ucsd.edu c0":0:1:
 felicita-axis:getcams-axis.pl:c:0:"Felicita-axis, http\://hpwren.ucsd.edu c0":0:1:
 hp-axis:getcams-axis.pl:c:0:"High Point, http\://hpwren.ucsd.edu c0":0:1:
-lo-axis:getcams-axis.pl:c:0:"Mount Laguna Observatory, http\://hpwren.ucsd.edu c0":0:1:
-lp-axis:getcams-axis.pl:c:0:"Lyons Peak, http\://hpwren.ucsd.edu c0":0:1:
-lp-e-mobo:getcams-mobo.pl:c:0:"Lyons Peak East, http\://hpwren.ucsd.edu c0":0:1:
-lp-e-mobo:getcams-mobo.pl:m:0:"Lyons Peak East, http\://hpwren.ucsd.edu c0":0:1:
+mlo-n-axis:getcams-axis.pl:c:0:"Mount Laguna Observatory N, http\://hpwren.ucsd.edu c0":0:1:
+mlo-s-axis:getcams-axis.pl:c:0:"Mount Laguna Observatory S, http\://hpwren.ucsd.edu c0":0:1:
+#lp-axis:getcams-axis.pl:c:0:"Lyons Peak, http\://hpwren.ucsd.edu c0":0:1:
+#lp-e-mobo:getcams-mobo.pl:c:0:"Lyons Peak East, http\://hpwren.ucsd.edu c0":0:1:
+#lp-e-mobo:getcams-mobo.pl:m:0:"Lyons Peak East, http\://hpwren.ucsd.edu c0":0:1:
 lp-n-mobo:getcams-mobo.pl:c:0:"Lyons Peak North, http\://hpwren.ucsd.edu c0":0:1:
 lp-n-mobo:getcams-mobo.pl:m:0:"Lyons Peak North, http\://hpwren.ucsd.edu c0":0:1:
 #lp-s-mobo:getcams-mobo.pl:c:0:"Lyons Peak South, http\://hpwren.ucsd.edu c0":0:1:
@@ -123,8 +124,8 @@ om-e-mobo:getcams-mobo.pl:c:0:"Otay Mountain East, http\://hpwren.ucsd.edu c0":0
 om-e-mobo:getcams-mobo.pl:m:0:"Otay Mountain East, http\://hpwren.ucsd.edu c0":0:1:
 #om-n-mobo:getcams-mobo.pl:c:0:"Otay Mountain North, http\://hpwren.ucsd.edu c0":0:1:
 #om-n-mobo:getcams-mobo.pl:m:0:"Otay Mountain North, http\://hpwren.ucsd.edu c0":0:1:
-#om-s-mobo:getcams-mobo.pl:c:0:"Otay Mountain South, http\://hpwren.ucsd.edu c0":0:1:
-#om-s-mobo:getcams-mobo.pl:m:0:"Otay Mountain South, http\://hpwren.ucsd.edu c0":0:1:
+om-s-mobo:getcams-mobo.pl:c:0:"Otay Mountain South, http\://hpwren.ucsd.edu c0":0:1:
+om-s-mobo:getcams-mobo.pl:m:0:"Otay Mountain South, http\://hpwren.ucsd.edu c0":0:1:
 #om-w-mobo:getcams-mobo.pl:c:0:"Otay Mountain West, http\://hpwren.ucsd.edu c0":0:1:
 #om-w-mobo:getcams-mobo.pl:m:0:"Otay Mountain West, http\://hpwren.ucsd.edu c0":0:1:
 pi-axis:getcams-axis.pl:c:0:"Los Pinos, http\://hpwren.ucsd.edu c0":0:1:
@@ -144,36 +145,36 @@ sdsc-e-mobo:getcams-mobo.pl:c:0:East, http\://hpwren.ucsd.edu c0":0:1:
 #sm-e-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel East, http\://hpwren.ucsd.edu c0":0:1:
 #smer-mob1:getcams-mobo.pl:c:0:"SMER River Crossing, http\://hpwren.ucsd.edu c0":0:1:
 #smer-mob1:getcams-mobo.pl:m:0:"SMER River Crossing, http\://hpwren.ucsd.edu c0":0:1:
-smer-tcs10-mobo:getcams-mobo.pl:c:0:"SMER TCS10, http\://hpwren.ucsd.edu c0":0:1:
-smer-tcs10-mobo:getcams-mobo.pl:m:0:"SMER TCS10, http\://hpwren.ucsd.edu c0":0:1:
+#smer-tcs10-mobo:getcams-mobo.pl:c:0:"SMER TCS10, http\://hpwren.ucsd.edu c0":0:1:
+#smer-tcs10-mobo:getcams-mobo.pl:m:0:"SMER TCS10, http\://hpwren.ucsd.edu c0":0:1:
 smer-tcs3-mobo:getcams-mobo.pl:c:0:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c0":0:1:
 smer-tcs3-mobo:getcams-mobo.pl:m:0:"SDSU SMER TCS3, http\://hpwren.ucsd.edu c0":0:1:
-smer-tcs8-mobo:getcams-mobo.pl:c:0:"SMER TCS8, http\://hpwren.ucsd.edu c0":0:1:
-smer-tcs8-mobo:getcams-mobo.pl:m:0:"SMER TCS8, http\://hpwren.ucsd.edu c0":0:1:
-smer-tcs9-mobo:getcams-mobo.pl:c:0:"SMER TCS9, http\://hpwren.ucsd.edu c0":0:1:
-smer-tcs9-mobo:getcams-mobo.pl:m:0:"SMER TCS9, http\://hpwren.ucsd.edu c0":0:1:
+#smer-tcs8-mobo:getcams-mobo.pl:c:0:"SMER TCS8, http\://hpwren.ucsd.edu c0":0:1:
+#smer-tcs8-mobo:getcams-mobo.pl:m:0:"SMER TCS8, http\://hpwren.ucsd.edu c0":0:1:
+#smer-tcs9-mobo:getcams-mobo.pl:c:0:"SMER TCS9, http\://hpwren.ucsd.edu c0":0:1:
+#smer-tcs9-mobo:getcams-mobo.pl:m:0:"SMER TCS9, http\://hpwren.ucsd.edu c0":0:1:
 #sm-n-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel North, http\://hpwren.ucsd.edu c0":0:1:
 #sm-n-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel North, http\://hpwren.ucsd.edu c0":0:1:
 #sm-s-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel South, http\://hpwren.ucsd.edu c0":0:1:
 #sm-s-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel South, http\://hpwren.ucsd.edu c0":0:1:
-sm-w-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel West, http\://hpwren.ucsd.edu c0":0:1:
-sm-w-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel West, http\://hpwren.ucsd.edu c0":0:1:
+#sm-w-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel West, http\://hpwren.ucsd.edu c0":0:1:
+#sm-w-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel West, http\://hpwren.ucsd.edu c0":0:1:
 so-e-mobo:getcams-mobo.pl:c:0:"Sky Oaks East, http\://hpwren.ucsd.edu c0":0:1:
 so-e-mobo:getcams-mobo.pl:m:0:"Sky Oaks East, http\://hpwren.ucsd.edu c0":0:1:
 so-n-mobo:getcams-mobo.pl:c:0:"Sky Oaks North, http\://hpwren.ucsd.edu c0":0:1:
 so-n-mobo:getcams-mobo.pl:m:0:"Sky Oaks North, http\://hpwren.ucsd.edu c0":0:1:
-#so-s-mobo:getcams-mobo.pl:c:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
-#so-s-mobo:getcams-mobo.pl:m:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
-#so-w-mobo:getcams-mobo.pl:c:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
-#so-w-mobo:getcams-mobo.pl:m:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
+so-s-mobo:getcams-mobo.pl:c:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
+so-s-mobo:getcams-mobo.pl:m:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
+so-w-mobo:getcams-mobo.pl:c:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
+so-w-mobo:getcams-mobo.pl:m:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
 sp-e-axis:getcams-axis.pl:c:0:"Santiago Peak East, http\://hpwren.ucsd.edu c0":0:1:
 sp-e-mobo:getcams-mobo.pl:c:0:"Santiago Peak East, http\://hpwren.ucsd.edu c0":0:1:
 sp-e-mobo:getcams-mobo.pl:m:0:"Santiago Peak East, http\://hpwren.ucsd.edu c0":0:1:
 sp-n-mobo:getcams-mobo.pl:c:0:"Santiago Peak North, http\://hpwren.ucsd.edu c0":0:1:
-#sp-n-mobo:getcams-mobo.pl:m:0:"Santiago Peak North, http\://hpwren.ucsd.edu c0":0:1:
-#sp-s-mobo:getcams-mobo.pl:c:0:"Santiago Peak South, http\://hpwren.ucsd.edu c0":0:1:
-#sp-s-mobo:getcams-mobo.pl:m:0:"Santiago Peak South, http\://hpwren.ucsd.edu c0":0:1:
-#sp-w-axis:getcams-axis.pl:c:0:"Santiago Peak West, http\://hpwren.ucsd.edu c0":0:1:
+sp-n-mobo:getcams-mobo.pl:m:0:"Santiago Peak North, http\://hpwren.ucsd.edu c0":0:1:
+sp-s-mobo:getcams-mobo.pl:c:0:"Santiago Peak South, http\://hpwren.ucsd.edu c0":0:1:
+sp-s-mobo:getcams-mobo.pl:m:0:"Santiago Peak South, http\://hpwren.ucsd.edu c0":0:1:
+sp-w-axis:getcams-axis.pl:c:0:"Santiago Peak West, http\://hpwren.ucsd.edu c0":0:1:
 #sp-w-mobo:getcams-mobo.pl:c:0:"Santiago Peak West, http\://hpwren.ucsd.edu c0":0:1:
 #sp-w-mobo:getcams-mobo.pl:m:0:"Santiago Peak West, http\://hpwren.ucsd.edu c0":0:1:
 #syp-axis:getcams-axis.pl:c:0:"Santa Ynez, http\://hpwren.ucsd.edu c0":0:1:

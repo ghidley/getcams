@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-iqeye.pl
 
-$VERS="11052019";
+$VERS="01062020";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
@@ -61,7 +61,7 @@ $HOME="/home/hpwren";
 # Passed in from run_cameras export ... 
 $DBG = 0; 
 $DBG = "$ENV{DBG}" ;
-$CEPH = "$ENV{CEPH}" ;
+$S3 = "$ENV{S3}" ;
 $POSIX = "$ENV{POSIX}" ;
 
 $S3CMD = "$ENV{S3CMD}" ;
@@ -71,7 +71,7 @@ $S3ARGS = "$ENV{S3ARGS}" ;
 #Above inherited from runcams ...
 
 ### Uncomment below for local s3cmd debugging ...
-#$CEPH = 1;
+#$S3 = 1;
 #$S3CMD="/usr/bin/s3cmd";
 #$S3CFG="$HOME/.s3cfg-xfer";
 #$S3ARGS="-c $S3CFG --no-check-md5 ";
@@ -138,11 +138,11 @@ $ID="$fileName\[$$\]:";
 if ($DBG) { print "\n\t$dtstamp: $filename: [$$] Running $progname  0=$ARGV[0] 1=$ARGV[1] 2=$ARGV[2] \n\t3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n" ; }
 print $FH "$dtstamp: $ID Running v$VERS $progname  0=$ARGV[0] 1=$ARGV[1] 2=$ARGV[2] 3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n";
 
-unless ( $POSIX || $CEPH ) {
-    if ($DBG) { print "\n\t$dtstamp: $filename: [$$] neither CEPH nor POSIX is set, you must set one in run_cameras, exiting\n\t3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n" ; }
-    die "Neither CEPH nor POSIX is set, exiting";
+unless ( $POSIX || $S3 ) {
+    if ($DBG) { print "\n\t$dtstamp: $filename: [$$] neither S3 nor POSIX is set, you must set one in run_cameras, exiting\n\t3=$ARGV[3] 4=$ARGV[4] 5=$ARGV[5] 6=$ARGV[6]\n" ; }
+    die "Neither S3 nor POSIX is set, exiting";
 }
-if ( $CEPH ) {
+if ( $S3 ) {
     unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $HOME\n"; }
 }
 
@@ -276,7 +276,7 @@ while ( 'true' ) {
                         print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA-diff175.jpg $CDIR/$CAMERA-diff-175.jpg failed\n";  
                 }
 
-                if ($CEPH){
+                if ($S3){
                     #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/");
                     $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-diff.jpg  $TDIR/$CAMERA/$CAMERA-diff175.jpg s3://latest/";
                     SystemTimer( $cmd );
@@ -299,7 +299,7 @@ while ( 'true' ) {
                     print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA.jpg $ADIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg failed\n"; 
                 system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $CDIR/$CAMERA.jpg");
             }
-            if ($CEPH){
+            if ($S3){
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/\");  \n\t"; }
                 #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/";
@@ -330,7 +330,7 @@ while ( 'true' ) {
                     copy  "$TVS", "$CDIR/$CAMERA-175.jpg" or 
                         print $FH "$dtstamp: $ID copy $TVS $CDIR/$CAMERA-175.jpg failed\n"; 
                 }
-                if ($CEPH){
+                if ($S3){
                     #system("$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg");
                     $cmd="$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg";
                     SystemTimer( $cmd );
