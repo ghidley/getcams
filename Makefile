@@ -3,13 +3,13 @@
 # Place getcams.service in confirmed location
 # Once debugged, add and commit
 #
-# Version 042719
+# Version 041419
 #
 ## Set filesystem type for testing
 ## Once tested, set/update default in run_cameras
 
 #
-ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras t tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile .s3cfg-xfer 
+ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile .s3cfg-xfer 
 RUNFILES=getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl tvpattern-small.jpg run_cameras hpwren8-400.png Makefile cleanlogs
 ARCHDIR=/Data/archive
 CDIR=$(ARCHDIR)/incoming/cameras
@@ -22,17 +22,17 @@ SYSLOCAL=/var/local/hpwren
 LOCKDIR=$(SYSLOCAL)/lock
 LOGDIR=$(SYSLOCAL)/log
 
-ALLDIRS=$(CDIR) $(DATADIR) $(ARCHDIR) $(INCOMING) $(LOCALDIR) $(LOCKDIR) $(LOGDIR) $(RUNDIR) $(SYSLOCAL) 
+#ALLDIRS=$(CDIR) $(DATADIR) $(ARCHDIR) $(INCOMING) $(LOCALDIR) $(LOCKDIR) $(LOGDIR) $(RUNDIR) $(SYSLOCAL) 
+ALLDIRS=$(CDIR) $(ARCHDIR) $(INCOMING) $(LOCALDIR) $(LOCKDIR) $(LOGDIR) $(RUNDIR) $(SYSLOCAL) 
 
 install:	
 	mkdir -p $(ALLDIRS)
-	chown hpwren:hpwren $(ALLDIRS)
-	chown hpwren:hpwren $(ALLDIRS)
+	-chown hpwren:hpwren $(ALLDIRS)
 	chmod g+w $(ALLDIRS)
 	#Following chmod may fail if on a ceph mounted file system
 	-chmod g+s $(ALLDIRS)
 	cp $(RUNFILES) $(RUNDIR)
-	chown hpwren:hpwren $(RUNDIR)/*
+	-chown hpwren:hpwren $(RUNDIR)/*
 
 test: testd
 testd:
@@ -50,17 +50,26 @@ stop:
 
 all: install $(CONTROLFILES)
 	cp $(CONTROLFILES) $(RUNDIR)
-	chown hpwren:hpwren $(RUNDIR)/*
-	cp getcams.service /usr/lib/systemd/system
-	cp .s3cfg-xfer ~hpwren
-	chown hpwren:hpwren  ~hpwren/.s3cfg-xfer 
-	systemctl daemon-reload
+	-chown hpwren:hpwren $(RUNDIR)/*
+
+root:
+	sudo mkdir -p $(ARCHDIR)
+	sudo chown hpwren:hpwren $(ARCHDIR)
+	sudo chmod g+w $(ARCHDIR)
+	#Following chmod may fail if on a ceph mounted file system
+	sudo chmod g+s $(ARCHDIR)
+	sudo cp getcams.service /usr/lib/systemd/system
+	sudo systemctl daemon-reload
 
 enable: getcams.service 
-	sudo  -u hpwren systemctl enable getcams.service
+	sudo  systemctl enable getcams.service
 
 disable: getcams.service 
-	sudo  -u hpwren systemctl disable getcams.service
+	sudo  systemctl disable getcams.service
 
 cameras:	# Trigger running run_cameras to adjust active camera list
 	sudo -u hpwren cp $(CONTROLFILES) $(RUNDIR)
+
+sync: #sync with c0 camacq1 git master
+	scp cleanlogs  getcams*.pl run_cameras Makefile c0:getcams
+

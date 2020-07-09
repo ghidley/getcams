@@ -85,10 +85,21 @@ bm-w-mobo:getcams-mobo.pl:m:0:"Big Black Mountain West, http\://hpwren.ucsd.edu 
 ch-axis:getcams-axis.pl:c:0:"Coronado Hills, http\://hpwren.ucsd.edu c0":0:1:
 #cowles-axis:getcams-axis.pl:c:0:"Cowles Mountain, http\://hpwren.ucsd.edu c0":0:1:
 felicita-axis:getcams-axis.pl:c:0:"Felicita-axis, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-n-axis:getcams-axis.pl:c:0:"Green Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-s-axis:getcams-axis.pl:c:0:"Green Peak South, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-e-mobo:getcams-mobo.pl:c:0:"Green Peak East, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-e-mobo:getcams-mobo.pl:m:0:"Green Peak East, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-n-mobo:getcams-mobo.pl:c:0:"Green Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-n-mobo:getcams-mobo.pl:m:0:"Green Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-s-mobo:getcams-mobo.pl:c:0:"Green Peak South, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-s-mobo:getcams-mobo.pl:m:0:"Green Peak South, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-w-mobo:getcams-mobo.pl:c:0:"Green Peak West, http\://hpwren.ucsd.edu c0":0:1:
+#dwpgm-w-mobo:getcams-mobo.pl:m:0:"Green Peak West, http\://hpwren.ucsd.edu c0":0:1:
 hp-axis:getcams-axis.pl:c:0:"High Point, http\://hpwren.ucsd.edu c0":0:1:
 mlo-n-axis:getcams-axis.pl:c:0:"Mount Laguna Observatory N, http\://hpwren.ucsd.edu c0":0:1:
 mlo-s-axis:getcams-axis.pl:c:0:"Mount Laguna Observatory S, http\://hpwren.ucsd.edu c0":0:1:
-#lp-axis:getcams-axis.pl:c:0:"Lyons Peak, http\://hpwren.ucsd.edu c0":0:1:
+#lp-n-axis:getcams-axis.pl:c:0:"Lyons Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#lp-s-axis:getcams-axis.pl:c:0:"Lyons Peak South, http\://hpwren.ucsd.edu c0":0:1:
 #lp-e-mobo:getcams-mobo.pl:c:0:"Lyons Peak East, http\://hpwren.ucsd.edu c0":0:1:
 #lp-e-mobo:getcams-mobo.pl:m:0:"Lyons Peak East, http\://hpwren.ucsd.edu c0":0:1:
 lp-n-mobo:getcams-mobo.pl:c:0:"Lyons Peak North, http\://hpwren.ucsd.edu c0":0:1:
@@ -140,6 +151,8 @@ pi-e-mobo:getcams-mobo.pl:c:0:"Los Pinos East, http\://hpwren.ucsd.edu c0":0:1:
 #rm-axis:getcams-axis.pl:c:0:"Red Mountain, http\://hpwren.ucsd.edu c0":0:1:
 sdsc-e-mobo:getcams-mobo.pl:c:0:East, http\://hpwren.ucsd.edu c0":0:1:
 #sdsc-e-mobo:getcams-mobo.pl:m:0:East, http\://hpwren.ucsd.edu c0":0:1:
+#sgbf-mobo:getcams-mobo.pl:c:0:"Near Anza, http\://hpwren.ucsd.edu c0":0:1:
+#sgbf-mobo:getcams-mobo.pl:m:0:"Near Anza, http\://hpwren.ucsd.edu c0":0:1:
 #sgbf-n-axis:getcams-axis.pl:c:0:"Anza, http\://hpwren.ucsd.edu c0":0:1:
 #sm-e-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel East, http\://hpwren.ucsd.edu c0":0:1:
 #sm-e-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel East, http\://hpwren.ucsd.edu c0":0:1:
@@ -187,6 +200,8 @@ sp-w-axis:getcams-axis.pl:c:0:"Santiago Peak West, http\://hpwren.ucsd.edu c0":0
 #syp-w-mobo:getcams-mobo.pl:c:0:"Santa Ynez Peak West, http\://hpwren.ucsd.edu c0":0:1:
 #syp-w-mobo:getcams-mobo.pl:m:0:"Santa Ynez Peak West, http\://hpwren.ucsd.edu c0":0:1:
 #tp-axis:getcams-axis.pl:c:0:"Toro Peak, http\://hpwren.ucsd.edu c0":0:1:
+#tp-n-axis:getcams-axis.pl:c:0:"Toro Peak North, http\://hpwren.ucsd.edu c0":0:1:
+#tp-s-axis:getcams-axis.pl:c:0:"Toro Peak South, http\://hpwren.ucsd.edu c0":0:1:
 ucsb-axis:getcams-axis.pl:c:0:"UCSB Campus, http\://hpwren.ucsd.edu c0":0:1:
 #victrace-axis:getcams-axis.pl:c:0:"Santa Barbara Mesa, http\://hpwren.ucsd.edu c0":0:1:
 #victrace-ne-mobo:getcams-mobo.pl:c:0:"Santa Barbara Mesa Northeast, http\://hpwren.ucsd.edu c0":0:1:

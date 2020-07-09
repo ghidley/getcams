@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-mobo.pl
 # 
-$VERS="01062020";
+$VERS="07092020";
 =begin comment
   getcams-mobo.pl -- camera image fetch and processing script for Mobotix cameras
   
@@ -18,7 +18,7 @@ $VERS="01062020";
       |camera name (also IP host basename)
 
   Above parameters read in by run_cameras (parent script) and passed to this program as command line args:
-    (e.g. getcams-mobo.pl $CAMERA $TYPE $STARTUP_DELAY $LABEL $RUN_ONCE $Camera_fetches_Per_Minute) $URL
+    (e.g. getcams-mobo.pl $CAMERA $TYPE $STARTUP_DELAY $LABEL $RUN_ONCE $Camera_fetches_Per_Minute $URL )
 
   Current version of code 
      1) fetches camera image 
@@ -73,9 +73,10 @@ $HOME="/home/hpwren";
 # Passed in from run_cameras export
 $DBG = 0; 
 $DBG = "$ENV{DBG}" ;
+$S3 = 0; 
 $S3 = "$ENV{S3}" ;
+$POSIX = 1;
 $POSIX = "$ENV{POSIX}" ;
-
 $S3CMD = "$ENV{S3CMD}" ;
 $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
@@ -83,6 +84,8 @@ $S3ARGS = "$ENV{S3ARGS}" ;
 #Above inherited from runcams ...
 
 ### Uncomment below for local s3cmd debugging ...
+#$DBG = 1; 
+#$POSIX = 1;
 #$S3 = 1;
 #$S3CMD="/usr/bin/s3cmd";
 #$S3CFG="$HOME/.s3cfg-xfer";
@@ -103,6 +106,10 @@ $PW = "$HPATH/cam_access";
 $ADIR="/Data/archive";                   # Archival image location
 $TDIR="/Data-local/scratch";             # Temp/local faster location for interim processing
 $CDIR= "$ADIR/incoming/cameras";         # Current image location (for web page collage)
+
+unless(-e $ADIR or mkdir -p $ADIR ) { die "Unable to create $ADIR\n"; }
+unless(-e $CDIR or mkdir -p $CDIR ) { die "Unable to create $CDIR\n"; }
+unless(-e $TDIR or mkdir -p $TDIR ) { die "Unable to create $TDIR\n"; }
 
 #Check if we have enough ARGS
 die "Insufficient args, got $#ARGV, need 6\n" if ( $#ARGV != 6 ) ;
@@ -235,16 +242,16 @@ sub UpdateTimeStamp {
 
 system("$MKDIR -p $TDIR/$CAMERA 2> /dev/null");
 
-# Sleep until next minute boundary
-$mytime=time();
-($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdat)=localtime($mytime);
-$min_delay = 60 - $sec;
-if($min_sdelay ne "0") {sleep($min_sdelay);}
+## Sleep until next minute boundary - NOT NEEDED OR DESIRED
+#$mytime=time();
+#($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdat)=localtime($mytime);
+#$min_sdelay = 60 - $sec;
+#if($min_sdelay ne "0") {sleep($min_sdelay);}
 
 # Now add any startup delay
 if($STARTUP_DELAY ne "0") {sleep($STARTUP_DELAY);} 
 
-## Counters for sleeping between fetches
+## Counters for sleeping between fetches (adjust for processing delay times)
 my $i = 0;  
 my $start_time = time();
 
@@ -353,9 +360,11 @@ while ( 'true' ) {
             }
         }
         $WAIT_TIME= ($start_time + $period * ++$i) - time() ; ##
-        #print $FH "$dtstamp: $ID Sleeping, WAIT_TIME = $WAIT_TIME, ITERATIONS = $ITERATIONS\n";
-        if ($DBG) { print "\tSleeping $WAIT_TIME seconds ...\n"; }
-        sleep($WAIT_TIME);
+        if ($WAIT_TIME > 0 ){
+            #print $FH "$dtstamp: $ID Sleeping, WAIT_TIME = $WAIT_TIME, ITERATIONS = $ITERATIONS\n";
+            if ($DBG) { print "\tSleeping $WAIT_TIME seconds ...\n"; }
+            sleep($WAIT_TIME);
+        }
         last if ($ITERATIONS == $CPM ); 
         $ITERATIONS++;
     } # End inner while loop ... Runs $CPM times
