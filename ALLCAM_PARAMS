@@ -49,6 +49,16 @@ bm-w-mobo:getcams-mobo.pl:m:0:"Big Black Mountain West, http\://hpwren.ucsd.edu 
 ch-axis:getcams-axis.pl:c:0:"Coronado Hills, http\://hpwren.ucsd.edu c0":0:1:
 cowles-axis:getcams-axis.pl:c:0:"Cowles Mountain, http\://hpwren.ucsd.edu c0":0:1:
 felicita-axis:getcams-axis.pl:c:0:"Felicita-axis, http\://hpwren.ucsd.edu c0":0:1:
+cp-e-mobo:getcams-mobo.pl:c:0:"Cuyamaca Peak East, http\://hpwren.ucsd.edu c0":0:1:
+cp-e-mobo:getcams-mobo.pl:m:0:"Cuyamaca Peak East, http\://hpwren.ucsd.edu c0":0:1:
+cp-n-axis:getcams-axis.pl:c:0:"Cuyamaca Peak North, http\://hpwren.ucsd.edu c0":0:1:
+cp-n-mobo:getcams-mobo.pl:c:0:"Cuyamaca Peak North, http\://hpwren.ucsd.edu c0":0:1:
+cp-n-mobo:getcams-mobo.pl:m:0:"Cuyamaca Peak North, http\://hpwren.ucsd.edu c0":0:1:
+cp-s-axis:getcams-axis.pl:c:0:"Cuyamaca Peak South, http\://hpwren.ucsd.edu c0":0:1:
+cp-s-mobo:getcams-mobo.pl:c:0:"Cuyamaca Peak South, http\://hpwren.ucsd.edu c0":0:1:
+cp-s-mobo:getcams-mobo.pl:m:0:"Cuyamaca Peak South, http\://hpwren.ucsd.edu c0":0:1:
+cp-w-mobo:getcams-mobo.pl:c:0:"Cuyamaca Peak West, http\://hpwren.ucsd.edu c0":0:1:
+cp-w-mobo:getcams-mobo.pl:m:0:"Cuyamaca Peak West, http\://hpwren.ucsd.edu c0":0:1:
 dwpgm-e-mobo:getcams-mobo.pl:c:0:"Green Peak East, http\://hpwren.ucsd.edu c0":0:1:
 dwpgm-e-mobo:getcams-mobo.pl:m:0:"Green Peak East, http\://hpwren.ucsd.edu c0":0:1:
 dwpgm-n-axis:getcams-axis.pl:c:0:"Green Peak North, http\://hpwren.ucsd.edu c0":0:1:
@@ -133,7 +143,8 @@ om-s-mobo:getcams-mobo.pl:c:0:"Otay Mountain South, http\://hpwren.ucsd.edu c0":
 om-s-mobo:getcams-mobo.pl:m:0:"Otay Mountain South, http\://hpwren.ucsd.edu c0":0:1:
 om-w-mobo:getcams-mobo.pl:c:0:"Otay Mountain West, http\://hpwren.ucsd.edu c0":0:1:
 om-w-mobo:getcams-mobo.pl:m:0:"Otay Mountain West, http\://hpwren.ucsd.edu c0":0:1:
-pi-axis:getcams-axis.pl:c:0:"Los Pinos, http\://hpwren.ucsd.edu c0":0:1:
+pi-n-axis:getcams-axis.pl:c:0:"Los Pinos North, http\://hpwren.ucsd.edu c0":0:1:
+pi-s-axis:getcams-axis.pl:c:0:"Los Pinos South, http\://hpwren.ucsd.edu c0":0:1:
 pi-e-mobo:getcams-mobo.pl:c:0:"Los Pinos East, http\://hpwren.ucsd.edu c0":0:1:
 pi-e-mobo:getcams-mobo.pl:m:0:"Los Pinos East, http\://hpwren.ucsd.edu c0":0:1:
 pi-n-mobo:getcams-mobo.pl:c:0:"Los Pinos North, http\://hpwren.ucsd.edu c0":0:1:
@@ -196,6 +207,8 @@ sjh-s-mobo:getcams-mobo.pl:c:0:"San Juan Hills South, http\://hpwren.ucsd.edu c0
 sjh-s-mobo:getcams-mobo.pl:m:0:"San Juan Hills South, http\://hpwren.ucsd.edu c0":0:1:
 sjh-w-mobo:getcams-mobo.pl:c:0:"San Juan Hills West, http\://hpwren.ucsd.edu c0":0:1:
 sjh-w-mobo:getcams-mobo.pl:m:0:"San Juan Hills West, http\://hpwren.ucsd.edu c0":0:1:
+sm-n-axis:getcams-axis.pl:c:0:"Mt. San Miguel North, http\://hpwren.ucsd.edu c0":0:1:
+sm-s-axis:getcams-axis.pl:c:0:"Mt. San Miguel South, http\://hpwren.ucsd.edu c0":0:1:
 sm-e-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel East, http\://hpwren.ucsd.edu c0":0:1:
 sm-e-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel East, http\://hpwren.ucsd.edu c0":0:1:
 smer-gorge:getcams-iqeye.pl:c:0:"SMER Gorge, SDSU FSP http\://hpwren.ucsd.edu c0":0:1:
@@ -243,6 +256,8 @@ starr-s-mobo:getcams-mobo.pl:c:0:"Starr Ranch South, http\://hpwren.ucsd.edu c0"
 starr-s-mobo:getcams-mobo.pl:m:0:"Starr Ranch South, http\://hpwren.ucsd.edu c0":0:1:
 starr-w-mobo:getcams-mobo.pl:c:0:"Starr Ranch West, http\://hpwren.ucsd.edu c0":0:1:
 starr-w-mobo:getcams-mobo.pl:m:0:"Starr Ranch West, http\://hpwren.ucsd.edu c0":0:1:
+svct-1-axis:getcams-axis.pl:c:0:"San Vicente 1, http\://hpwren.ucsd.edu c0":0:1:
+svct-2-axis:getcams-axis.pl:c:0:"San Vicente 2, http\://hpwren.ucsd.edu c0":0:1:
 syp-axis:getcams-axis.pl:c:0:"Santa Ynez, http\://hpwren.ucsd.edu c0":0:1:
 syp-e-mobo:getcams-mobo.pl:c:0:"Santa Ynez Peak East, http\://hpwren.ucsd.edu c0":0:1:
 syp-e-mobo:getcams-mobo.pl:m:0:"Santa Ynez Peak East, http\://hpwren.ucsd.edu c0":0:1:
@@ -307,3 +322,4 @@ wilson-w-mobo:getcams-mobo.pl:m:0:"Mt. Wilson Observatory West, http\://hpwren.u
 ##hpwren-iqeye21:getcams-iqeye.pl:c:0:"SMER river crossing, http\://hpwren.ucsd.edu c0":0:1:
 ##hpwren-iqeye23:getcams-iqeye.pl:c:0:"Temecula1, http\://hpwren.ucsd.edu c0":0:1:
 ##hpwren-iqeye24:getcams-iqeye.pl:c:0:"Temecula2, http\://hpwren.ucsd.edu c0":0:1:
+##pi-axis:getcams-axis.pl:c:0:"Los Pinos, http\://hpwren.ucsd.edu c0":0:1:

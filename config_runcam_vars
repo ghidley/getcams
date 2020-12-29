@@ -1,0 +1,33 @@
+#!/usr/bin/bash
+
+# Config getcams variables for run_cameras (bash) 
+
+### NOTE! This is the run_cameras (aka getcams) config file, 
+# Set preferred file system default before running as service !
+# Set during testing via command line args -S and/or -P
+# S3 variable means S3 storage access
+# POSIX variable means hierarchical file system usage, could be local, CEPH POSIX mounted or NFS mounted
+# Use one or the other
+
+set -a  # export all variables
+
+# Following two variables set in both config_runcams_vars and config_getcams_vars
+HOME="/home/hpwren"
+POSIX=1
+
+S3=0 
+S3CMD="/usr/bin/s3cmd"
+S3CFG="$HOME/.s3cfg-xfer"
+S3ARGS="-c $S3CFG --no-check-md5 --quiet"
+
+HPATH="$HOME/bin/getcams"
+epath="$HPATH"
+params="$epath/cam_params"
+access="$epath/cam_access"
+
+logpath="/var/local/hpwren/log"
+log="$logpath/runcamlog"
+lockpath="/var/local/hpwren/lock"
+LOCK="$lockpath/RUNCAM_PID"
+
+set +a # stop exporting variables

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-mobo.pl
 # 
-$VERS="07092020";
+$VERS="12112020";
 =begin comment
   getcams-mobo.pl -- camera image fetch and processing script for Mobotix cameras
   
@@ -34,17 +34,25 @@ $VERS="07092020";
 =end comment
 =cut
 
+#Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
+
 use File::Basename;
 use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;
 
-my $cmd;
-my $FH ; 
-my $timeout = 45;
+# Read in getcams variables in file $HOME/bin/getcams/config_getcams_vars  to set common variables
+$HOME   =   "/home/hpwren";
+$cfile   =   "$HOME/bin/getcams/config_getcams_vars";
+open CONFIG, "$cfile" or die "couldn't open $cfile\n";
+my $config = join "", <CONFIG>;
+close CONFIG;
+eval $config;
+die "Couldn't eval your config: $@\n" if $@;
 
 # SystemTimer routine used to prevent hanging system calls by using an internal timeout mechanism
+my $cmd; my $FH ; my $timeout = 45;
 sub SystemTimer {
     my ( $command ) = @_;
     print $FH "$dtstamp: $ID Executing system(\"$command\");\n";
@@ -58,18 +66,6 @@ sub SystemTimer {
 } #End SystemTimer
 
 
-# Program Paths
-$CONVERT="/usr/bin/convert";
-$CURL="/usr/bin/curl";
-$COPTS=" --connect-timeout 5 --max-time 15 --retry 4 ";
-$MKDIR="/usr/bin/mkdir";
-$PNMARITH="/usr/bin/pnmarith";
-$PNMSCALE="/usr/bin/pnmscale";
-$PPMLABEL="/usr/bin/ppmlabel";
-
-
-$HOME="/home/hpwren";
-
 # Passed in from run_cameras export
 $DBG = 0; 
 $DBG = "$ENV{DBG}" ;
@@ -80,7 +76,6 @@ $POSIX = "$ENV{POSIX}" ;
 $S3CMD = "$ENV{S3CMD}" ;
 $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
-
 #Above inherited from runcams ...
 
 ### Uncomment below for local s3cmd debugging ...
@@ -91,21 +86,12 @@ $S3ARGS = "$ENV{S3ARGS}" ;
 #$S3CFG="$HOME/.s3cfg-xfer";
 #$S3ARGS="-c $S3CFG --no-check-md5 ";
 
-$PATH = "$ENV{PATH}" ;
-$HPATH="$HOME/bin/getcams";
-$LOGS = "/var/local/hpwren/log";
 
 $|++;  # Flush IO buffer at every print
 
 unless(-e $HPATH or mkdir -p $HPATH) { die "Unable to create $HPATH\n"; }
 unless(-e $LOGS or mkdir -p $LOGS) { die "Unable to create $LOGS\n"; }
 chdir("$HPATH") or die "cannot change: $!\n";
-
-$TVS = "$HPATH/tvpattern-small.jpg";
-$PW = "$HPATH/cam_access";  
-$ADIR="/Data/archive";                   # Archival image location
-$TDIR="/Data-local/scratch";             # Temp/local faster location for interim processing
-$CDIR= "$ADIR/incoming/cameras";         # Current image location (for web page collage)
 
 unless(-e $ADIR or mkdir -p $ADIR ) { die "Unable to create $ADIR\n"; }
 unless(-e $CDIR or mkdir -p $CDIR ) { die "Unable to create $CDIR\n"; }

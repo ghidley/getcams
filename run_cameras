@@ -1,6 +1,8 @@
 #!/bin/bash 
-version="v07092020"
-#
+version="v08312020"
+# File: run_cameras
+
+# Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
 # Will be managed by systemctl start/stop/restart when in production mode:
 #	Start=/home/hpwren/bin/run_cameras -I
 #	ExecStop=/home/hpwren/bin/run_cameras -X
@@ -44,33 +46,17 @@ export HOME
 PATH="$HOME/bin/getcams:$PATH"
 export PATH
 
-S3CMD="/usr/bin/s3cmd"
-S3CFG="$HOME/.s3cfg-xfer"
-S3ARGS="-c $S3CFG --no-check-md5 --quiet"
-export S3CMD
-export S3CFG
-export S3ARGS
+CONFIG_FILE="$HOME/bin/getcams/config_runcam_vars"
 
-### NOTE!
-# Set preferred file system default before running as service !
-# Set during testing via command line args -S and/or -P
-# S3 variable means S3 storage access
-# POSIX variable means hierarchical file system usage, could be local, CEPH POSIX mounted or NFS mounted
-# Use one or the other
-
-S3=0
-export S3
-POSIX=1
-export POSIX
-
-epath="$HOME/bin/getcams"
-params="$epath/cam_params"
-access="$epath/cam_access"
-
-logpath="/var/local/hpwren/log"
-log="$logpath/runcamlog"
-lockpath="/var/local/hpwren/lock"
-LOCK="$lockpath/RUNCAM_PID"
+# Read in configuration file
+if [[ ! -f  $CONFIG_FILE ]] ;
+then
+    printf "Missing config file  $CONFIG_FILE ... Exiting\n"
+    logger -p notice -- "$(basename $0)[$pid] Missing config file  $CONFIG_FILE ... Exiting"
+    printf "$tstamp: $(basename $0)[$$]: Missing config file  $CONFIG_FILE ... Exiting\n" >> $log
+    exit
+fi
+source $CONFIG_FILE
 
 # If needed, create master lockfile directory
 [ -e $lockpath ] || mkdir $lockpath 

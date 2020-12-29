@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-iqeye.pl
 
-$VERS="07092020";
+$VERS="12132020";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
@@ -35,28 +35,29 @@ $VERS="07092020";
 =end comment
 =cut
 
+#Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
+
 use File::Basename;
 use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;
 
+# Read in getcams variables in file $HOME/bin/getcams/config_getcams_vars  to set common variables
+$HOME   =   "/home/hpwren";
+$cfile   =   "$HOME/bin/getcams/config_getcams_vars";
+open CONFIG, "$cfile" or die "couldn't open $cfile\n";
+my $config = join "", <CONFIG>;
+close CONFIG;
+eval $config;
+die "Couldn't eval your config: $@\n" if $@;
+
+
 my $cmd;
 my $FH;
 my $timeout =  45;
 
 # sub SystemTimer routine moved to end of code
-
-# Program Paths
-$CONVERT="/usr/bin/convert";
-$CURL="/usr/bin/curl";
-$COPTS=" --connect-timeout 5 --max-time 15 --retry 4 ";
-$MKDIR="/usr/bin/mkdir";
-$PNMARITH="/usr/bin/pnmarith";
-$PNMSCALE="/usr/bin/pnmscale";
-$PPMLABEL="/usr/bin/ppmlabel";
-
-$HOME="/home/hpwren";
 
 # Passed in from run_cameras export ... 
 $DBG = 0; 
@@ -68,31 +69,22 @@ $POSIX = "$ENV{POSIX}" ;
 $S3CMD = "$ENV{S3CMD}" ;
 $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
-
 #Above inherited from runcams ...
 
 ### Uncomment below for local s3cmd debugging ...
+#$DBG = 1;
+#$POSIX = 1;
 #$S3 = 1;
 #$S3CMD="/usr/bin/s3cmd";
 #$S3CFG="$HOME/.s3cfg-xfer";
 #$S3ARGS="-c $S3CFG --no-check-md5 ";
 
-$PATH = "$ENV{PATH}" ;
-$HPATH="$HOME/bin/getcams";
-$LOGS = "/var/local/hpwren/log";
 
 $|++;  # Flush IO buffer at every print
 
 unless(-e $HPATH or mkdir -p $HPATH ) { die "Unable to create $HPATH\n"; }
 unless(-e $LOGS or mkdir -p $LOGS ) { die "Unable to create $LOGS\n"; }
 chdir("$HPATH") or die "cannot change: $!\n";
-
-
-$TVS = "$HPATH/tvpattern-small.jpg";
-$PW = "$HPATH/cam_access";  
-$ADIR="/Data/archive";                   # Archival image location
-$TDIR="/Data-local/scratch";             # Temp/local faster location for interim processing
-$CDIR= "$ADIR/incoming/cameras";         # Current image location (for web page collage)
 
 unless(-e $ADIR or mkdir -p $ADIR ) { die "Unable to create $ADIR\n"; }
 unless(-e $CDIR or mkdir -p $CDIR ) { die "Unable to create $CDIR\n"; }
@@ -104,6 +96,7 @@ die "Insufficient args, got $#ARGV, need 6\n" if ( $#ARGV != 6 ) ;
 $CAMERA=$ARGV[0]; 
 $HOST=$CAMERA;
 $TYPE=$ARGV[1];    #c or n
+
 $STARTUP_DELAY=$ARGV[2];
 $LABEL=$ARGV[3];
 if($LABEL eq ""){$LABEL="-";}
@@ -215,14 +208,13 @@ sub UpdateTimeStamp {
         if ( ! -d "$ADIR/$CAMERA/large/$dstamp/$APTAG" ) {  
             if ($DBG) { print "\t$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null\n" ; }
             system("$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null");
-            #system("$MKDIR -p $ADIR/$CAMERA/small/$dstamp/$APTAG 2> /dev/null");  
         }
     }
 } #End UpdateTimeStamp
 
 system("$MKDIR -p $TDIR/$CAMERA 2> /dev/null");
 
-
+ 
 ## Sleep until next minute boundary - NOT NEEDED OR DESIRED
 #$mytime=time();
 #($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdat)=localtime($mytime);
@@ -236,7 +228,7 @@ if($STARTUP_DELAY ne "0") {sleep($STARTUP_DELAY);}
 my $i = 0;
 my $start_time = time();
 
-# Start outer while loop ... do just one cycle (if RUN_ONCE is true) otherwise run continuously
+## Start outer while loop ... do just one cycle (if RUN_ONCE is true) otherwise run continuously
 while ( 'true' ) {
     $ITERATIONS=1;
     while ($ITERATIONS <= $CPM) {# Start inner while loop, repeat CPM times
@@ -245,9 +237,6 @@ while ( 'true' ) {
             print "\tcapture $ITERATIONS of $CPM \n";
             print "\tsystem(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
         }
-
-        # OLD: print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
-        # OLD: $R=system("$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
         $cmd = "$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null";
         $R = SystemTimer( $cmd ); # Using SystemTimer() with alarm code to interupt potential hangs
 
@@ -306,23 +295,18 @@ while ( 'true' ) {
             }
             if ($S3){
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/\");  \n\t"; }
-                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/";
                 SystemTimer( $cmd );
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
-                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://archive/$CAMERA/large/$dstamp/$APTAG/$time.jpg";
                 SystemTimer( $cmd );
                 # Replicate above archive copy lines to s3://recent
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg\");  \n\t"; }
-                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg";
                 SystemTimer( $cmd );
                 system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
 
-                #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/";
-                if ($DBG) { print "\tsystem(\"$cmd\"); \n\t"; }
                 SystemTimer( $cmd );
 
             }
@@ -336,7 +320,6 @@ while ( 'true' ) {
                         print $FH "$dtstamp: $ID copy $TVS $CDIR/$CAMERA-175.jpg failed\n"; 
                 }
                 if ($S3){
-                    #system("$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg");
                     $cmd="$S3CMD $S3ARGS put $TVS s3://latest/$CAMERA-175.jpg";
                     SystemTimer( $cmd );
                 }

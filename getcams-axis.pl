@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-axis.pl
 
-$VERS="07092020";
+$VERS="12202020";
 =begin comment
   getcams-axis.pl -- camera image fetch and processing script for axis cameras
   
@@ -30,8 +30,11 @@ $VERS="07092020";
   Test in isolation with - sudo -u hpwren ./getcams-axis.pl 69bravo-axis c 0 "Boucher Hill, http://hpwren.ucsd.edu c0" 0 1 DEFAULT
   [uncomment S3 variables below before testing in isolation]
 
+
 =end comment
 =cut
+
+#Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
 
 use File::Basename;
 use Log::Log4perl;
@@ -39,18 +42,19 @@ use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;
 
+
+# Read in getcams variables in file $HOME/bin/getcams/config_getcams_vars  to set common variables
+$HOME   =   "/home/hpwren";
+$cfile   =   "$HOME/bin/getcams/config_getcams_vars";
+open CONFIG, "$cfile" or die "couldn't open $cfile\n";
+my $config = join "", <CONFIG>;
+close CONFIG;
+eval $config;
+die "Couldn't eval your config: $@\n" if $@;
+
 my $cmd;
 my $FH ;
 my $timeout = 45;
-
-
-# Program Paths
-$CONVERT="/usr/bin/convert";
-$CURL="/usr/bin/curl";
-$MKDIR="/usr/bin/mkdir";
-$PNMARITH="/usr/bin/pnmarith";
-$PNMSCALE="/usr/bin/pnmscale";
-$PPMLABEL="/usr/bin/ppmlabel";
 
 
 $HOME="/home/hpwren";
@@ -69,28 +73,18 @@ $S3ARGS = "$ENV{S3ARGS}" ;
 #Above inherited from runcams ...
 
 ### Uncomment below for local s3cmd debugging ...
+#$DBG = 1; 
+#$POSIX = 1;
 #$S3 = 1;
 #$S3CMD="/usr/bin/s3cmd";
 #$S3CFG="$HOME/.s3cfg-xfer";
 #$S3ARGS="-c $S3CFG --no-check-md5 ";
-
-$COPTS=" --connect-timeout 5 --max-time 15 --retry 4 ";
-
-$PATH = "$ENV{PATH}" ;
-$HPATH="$HOME/bin/getcams";
-$LOGS = "/var/local/hpwren/log";
 
 $|++;  # Flush IO buffer at every print
 
 unless(-e $HPATH or mkdir -p $HPATH) { die "Unable to create $HPATH\n"; }
 unless(-e $LOGS or mkdir -p $LOGS) { die "Unable to create $LOGS\n"; }
 chdir("$HPATH") or die "cannot change directory: $!\n";
-
-$TVS = "$HPATH/tvpattern-small.jpg";
-$PW = "$HPATH/cam_access";  
-$ADIR="/Data/archive";                   # Archival image location
-$TDIR="/Data-local/scratch";             # Temp/local faster location for interim processing
-$CDIR= "$ADIR/incoming/cameras";         # Current image location (for web page collage)
 
 unless(-e $ADIR or mkdir -p $ADIR ) { die "Unable to create $ADIR\n"; }
 unless(-e $CDIR or mkdir -p $CDIR ) { die "Unable to create $CDIR\n"; }
@@ -224,7 +218,6 @@ sub UpdateTimeStamp {
         if ( ! -d "$ADIR/$CAMERA/large/$dstamp/$APTAG" ) {  
             if ($DBG) { print "\t$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null\n" ; }
             system("$MKDIR -p $ADIR/$CAMERA/large/$dstamp/$APTAG 2> /dev/null");
-            #system("$MKDIR -p $ADIR/$CAMERA/small/$dstamp/$APTAG 2> /dev/null");  
         }
     }
 } #End UpdateTimeStamp
@@ -247,9 +240,6 @@ my $i = 0;
 my $start_time = time();
 
 
-my $i = 0;
-my $start_time = time();
-
 # Start outer while loop ... do just one cycle (if RUN_ONCE is true) otherwise run continuously
 while ( 'true' ) {
     $ITERATIONS=1;
@@ -259,10 +249,6 @@ while ( 'true' ) {
             print "\tcapture $ITERATIONS of $CPM \n";
             print "\tsystem(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
         }
-
-        # OLD: print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
-        # OLD: $R=system("$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
-        # OLD: $R=system("$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
 
         $cmd = "$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null";
         $R = SystemTimer( $cmd ); # Using SystemTimer() with alarm code to interupt potential hangs

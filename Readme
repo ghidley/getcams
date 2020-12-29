@@ -1,6 +1,8 @@
-4/20/19
+11/24/20
 This directory, if on c0 (c0:~ghidley/getcams), is the source directory for the getcams system.
-Sources stored on https://github.com/ghidley/getcams
+Sources manged by git and stored on https://github.com/ghidley/getcams
+Directory backed up nightly via cron driven scp to c1:bu/getcams
+This code runs at UCSD (on c0, aka camacq1)) and at UCI  (on c5, aka uci-camacq1)
 
 Most development done here, then followed by  "sudo make" to install in run area
 Running "sudo make all" will also cp over vanilla control files cam_access_format and cam_params
