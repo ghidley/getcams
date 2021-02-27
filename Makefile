@@ -48,6 +48,19 @@ restart:
 stop:
 	sudo -b -u hpwren ~hpwren/bin/getcams/run_cameras -X 
 
+Start:
+	sudo  systemctl start getcams.service
+ 
+status: Status
+Status:
+	systemctl status getcams.service
+ 
+Restart:
+	sudo  systemctl restart getcams.service
+
+Stop:
+	sudo  systemctl stop getcams.service
+
 all: install $(CONTROLFILES)
 	cp $(CONTROLFILES) $(RUNDIR)
 	-chown hpwren:hpwren $(RUNDIR)/*
@@ -70,6 +83,6 @@ disable: getcams.service
 cameras:	# Trigger running run_cameras to adjust active camera list
 	sudo -u hpwren cp $(CONTROLFILES) $(RUNDIR)
 
-sync: #sync with c0 camacq1 git master --- run on c5 or other a(non c0) remote
-	scp  config_getcams_vars config_runcam_vars cleanlogs  getcams*.pl run_cameras Makefile c0:getcams/c5
+sync: #sync with c0 camacq1 git master --- run on c5 or other (non c0) remote
+	scp  getcams.service config_getcams_vars config_runcam_vars cleanlogs  getcams*.pl run_cameras Makefile c0:getcams/c5
 

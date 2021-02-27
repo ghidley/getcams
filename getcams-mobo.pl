@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-mobo.pl
 # 
-$VERS="12112020";
+$VERS="02142021";
 =begin comment
   getcams-mobo.pl -- camera image fetch and processing script for Mobotix cameras
   
@@ -51,28 +51,31 @@ close CONFIG;
 eval $config;
 die "Couldn't eval your config: $@\n" if $@;
 
-# SystemTimer routine used to prevent hanging system calls by using an internal timeout mechanism
-my $cmd; my $FH ; my $timeout = 45;
+# SystemTimer routine used to prevent hanging system calls by using an internal timeout
+# mechanism defaulting to 60 seconds ... override with: $proc->maxtime ($timeout);
+my $cmd; my $FH ; 
 sub SystemTimer {
     my ( $command ) = @_;
     print $FH "$dtstamp: $ID Executing system(\"$command\");\n";
     my $proc = Proc::Reliable->new ();
-    $proc->maxtime ($timeout);
     ($stdout, $stderr, $rstatus, $msg) = $proc->run($command);
     if ($rstatus) {
-      print $FH "$dtstamp: $ID Timeout! Status is $rstatus, stdout is $stdout, stderr is $stderr, cmd is $command\n";
+      print $FH "$dtstamp: $ID Timeout! \[$command\] $stderr\n";
     }
     return $rstatus ;
 } #End SystemTimer
 
 
-# Passed in from run_cameras export
+
+# Passed in from run_cameras export, allow environmental overrides!
 $DBG = 0; 
+if(defined $ENV{DBG}) { $DBG = "$ENV{DBG}" ; }
 $DBG = "$ENV{DBG}" ;
 $S3 = 0; 
-$S3 = "$ENV{S3}" ;
+if(defined $ENV{S3}) { $S3 = "$ENV{S3}" ; }
 $POSIX = 1;
-$POSIX = "$ENV{POSIX}" ;
+if(defined $ENV{POSIX}) { $POSIX = "$ENV{POSIX}" ; }
+
 $S3CMD = "$ENV{S3CMD}" ;
 $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
@@ -248,12 +251,10 @@ while ( 'true' ) {
         UpdateTimeStamp();
         if ($DBG) {
             print "\tcapture $ITERATIONS of $CPM \n";
-            print "\tsystem(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
+            print "\tsystem(\"$CURL -sS $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP \"); \n";
         }
-        #print $FH "$dtstamp: $ID system(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\");\n";
-        $cmd = "$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null";
+        $cmd = "$CURL -sS $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP ";
         $R = SystemTimer( $cmd ); # Using SystemTimer() with alarm code to interupt potential hangs
-        #$R=system("$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null");
         if($R == 0){
             if ($DBG) { print "\tFetch succeeded, R = $R, dtstamp = $dtstamp, LABEL = $LABEL\n"; }
             if ( -s "$TDIR/$CAMERA/temp.ppm" ) {  # File exists and is not empty

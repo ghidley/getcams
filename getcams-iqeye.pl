@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-iqeye.pl
 
-$VERS="12132020";
+$VERS="02202021";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
@@ -59,13 +59,14 @@ my $timeout =  45;
 
 # sub SystemTimer routine moved to end of code
 
+
 # Passed in from run_cameras export ... 
 $DBG = 0; 
+if(defined $ENV{DBG}) { $DBG = "$ENV{DBG}" ; }
 $POSIX = 1;
-$DBG = "$ENV{DBG}" ;
+if(defined $ENV{POSIX}) { $POSIX = "$ENV{POSIX}" ; }
 $S3 = 0; 
-$S3 = "$ENV{S3}" ;
-$POSIX = "$ENV{POSIX}" ;
+if(defined $ENV{S3}) { $S3 = "$ENV{S3}" ; }
 $S3CMD = "$ENV{S3CMD}" ;
 $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
@@ -235,9 +236,9 @@ while ( 'true' ) {
         UpdateTimeStamp();
         if ($DBG) {
             print "\tcapture $ITERATIONS of $CPM \n";
-            print "\tsystem(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
+            print "\tsystem(\"$CURL $COPTS $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP \"); \n";
         }
-        $cmd = "$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null";
+        $cmd = "$CURL $COPTS $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP ";
         $R = SystemTimer( $cmd ); # Using SystemTimer() with alarm code to interupt potential hangs
 
         if($R == 0){

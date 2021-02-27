@@ -9,13 +9,14 @@ our $POSIX 		=	 1;
 # Program Paths
 our $CONVERT	=	"/usr/bin/convert";
 our $CURL		=	"/usr/bin/curl";
-our $COPTS		=	" --connect-timeout 5 --max-time 15 --retry 4 ";
+#our $COPTS		=	" -sS --connect-timeout 5 --max-time 15 --retry 4 ";
+our $COPTS		=	" -sS --connect-timeout 5 --max-time 15 ";
 our $MKDIR		=	"/usr/bin/mkdir";
 our $PNMARITH	=	"/usr/bin/pnmarith";
 our $PNMSCALE	=	"/usr/bin/pnmscale";
 our $PPMLABEL	=	"/usr/bin/ppmlabel";
 
-#Uncomment only if degugging getcams-*.pl manually (not via run_cameras
+#Uncomment only if degugging getcams-*.pl manually (not via run_cameras)
 #our $DBG 		=	 1; 
 #our $S3 		=	 1;
 #our $S3CMD		=	"/usr/bin/s3cmd";

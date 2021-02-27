@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-axis.pl
 
-$VERS="12202020";
+$VERS="02212021";
 =begin comment
   getcams-axis.pl -- camera image fetch and processing script for axis cameras
   
@@ -56,16 +56,15 @@ my $cmd;
 my $FH ;
 my $timeout = 45;
 
-
 $HOME="/home/hpwren";
 
 # Passed in from run_cameras export
 $DBG = 0; 
-$DBG = "$ENV{DBG}" ;
+if(defined $ENV{DBG}) { $DBG = "$ENV{DBG}" ; }
 $S3 = 0; 
-$S3 = "$ENV{S3}" ;
+if(defined $ENV{S3}) { $S3 = "$ENV{S3}" ; }
 $POSIX = 1;
-$POSIX = "$ENV{POSIX}" ;
+if(defined $ENV{POSIX}) { $POSIX = "$ENV{POSIX}" ; }
 $S3CMD = "$ENV{S3CMD}" ;
 $S3CFG = "$ENV{S3CFG}" ;
 $S3ARGS = "$ENV{S3ARGS}" ;
@@ -247,10 +246,10 @@ while ( 'true' ) {
         UpdateTimeStamp();
         if ($DBG) {
             print "\tcapture $ITERATIONS of $CPM \n";
-            print "\tsystem(\"$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null\"); \n";
+            print "\tsystem(\"$CURL $COPTS $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP \"); \n";
         }
 
-        $cmd = "$CURL -s $CREDS $COPTS -o $TDIR/$CAMERA/temp.jpg $HTTP 2> /dev/null";
+        $cmd = "$CURL  $COPTS $CREDS -o $TDIR/$CAMERA/temp.jpg $HTTP ";
         $R = SystemTimer( $cmd ); # Using SystemTimer() with alarm code to interupt potential hangs
 
         if($R == 0){

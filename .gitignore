@@ -1,1 +1,10 @@
+_MASTER-c0
+.lock
 cam_access
+cam_params-*
+c5/
+edgex-perl-connector/
+K8-getcams/
+Makefile-cn
+old/
+tests/

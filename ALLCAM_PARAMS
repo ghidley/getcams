@@ -7,6 +7,7 @@
 ## Disabled, unused or removed cams listed at end of file
 ##NAME:PROGRAM:TYPE:STARTUP_DELAY:"LABEL":RUN_ONCE:CAPTURES/MINUTE:OPTIONAL CAM-SPECIFIC URL TO USE WITH CURL:
 #
+##69bravo-ir-mobo:getcams-axis.pl:m:0:"LA Co Helibase 69 IR cam, http\://hpwren.ucsd.edu c5":0:1:
 69bravo-e-axis:getcams-axis.pl:c:0:"LA Co Helibase 69 East, http\://hpwren.ucsd.edu c0":0:1:
 69bravo-e-mobo:getcams-mobo.pl:c:0:"LA Co Helibase 69 East, http\://hpwren.ucsd.edu c0":0:1:
 69bravo-e-mobo:getcams-mobo.pl:m:0:"LA Co Helibase 69 East, http\://hpwren.ucsd.edu c0":0:1:
@@ -267,6 +268,10 @@ syp-s-mobo:getcams-mobo.pl:c:0:"Santa Ynez Peak South, http\://hpwren.ucsd.edu c
 syp-s-mobo:getcams-mobo.pl:m:0:"Santa Ynez Peak South, http\://hpwren.ucsd.edu c0":0:1:
 syp-w-mobo:getcams-mobo.pl:c:0:"Santa Ynez Peak West, http\://hpwren.ucsd.edu c0":0:1:
 syp-w-mobo:getcams-mobo.pl:m:0:"Santa Ynez Peak West, http\://hpwren.ucsd.edu c0":0:1:
+tje-1-mobo:getcams-mobo.pl:c:0:"Tijuana Estuary 1, http\://hpwren.ucsd.edu c0":0:1:
+tje-1-mobo:getcams-mobo.pl:m:0:"Tijuana Estuary 1, http\://hpwren.ucsd.edu c0":0:1:
+tje-2-mobo:getcams-mobo.pl:c:0:"Tijuana Estuary 2, http\://hpwren.ucsd.edu c0":0:1:
+tje-2-mobo:getcams-mobo.pl:m:0:"Tijuana Estuary 2, http\://hpwren.ucsd.edu c0":0:1:
 tp-n-axis:getcams-axis.pl:c:0:"Toro Peak North, http\://hpwren.ucsd.edu c0":0:1:
 tp-s-axis:getcams-axis.pl:c:0:"Toro Peak South, http\://hpwren.ucsd.edu c0":0:1:
 tp-axis:getcams-axis.pl:c:0:"Toro Peak, http\://hpwren.ucsd.edu c0":0:1:

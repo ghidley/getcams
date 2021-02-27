@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v08312020"
+version="v02142021"
 # File: run_cameras
 
 # Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
@@ -212,36 +212,22 @@ do
 	do
 		if [[ ${line[0]:0:1} == "#" ]];
 		then
-           ### Trial code for handling disabled cams (those preceeded by a single # in the cam_params file)
-           # Code to disable any cams that have been commented out if their getcams is still running ...
-           quitcam=${line[0]}
-           quitcam_name=${quitcam##*\#}
-           camtype=${line[2]}
-           # Terminate any running getcams whose corresponding camera has been commented out
-           # Ensure valid camera entry first, rather than random comments
-           if [[ $camtype == "c" ]] || [[ camtype == "m" ]];
-           then
-               if [[ -e "$lockpath/$quitcam_name-$camtype.lock" ]];
-               then
-                   kpid=$(cat $lockpath/$quitcam_name-$camtype.lock)
-                   kill $kpid # &> /dev/null #kill process, remove lockfile and fall through to exit
-                   rm -f $lockpath/$quitcam_name-$camtype.lock
-                   printf "Disabled $quitcam_name-$camtype, KKilled proc $kpid and removed old lockfile $lockpath/$quitcam_name-$camtype.lock\n"
-                   printf "$tstamp: $(basename $0)[$$]: Disabled $quitcam_name-$camtype and KKilled $lockpath/$quitcam_name-$camtype.lock [$kpid] ...\n" >> $log
-               fi
-            fi
-            ###
 			continue    #On to the next line ...
 		fi
 		if [ -z "$line" ];
 		then
 			continue    #Skip lines that are blank
 		fi
+		if [[ "$first_loop" = true ]] ;  
+        then
+            sleep $cam_delay # Start up cams 1 second apart 
+        fi
 		echo "Processing: ${line[*]}"
 		cam=${line[0]}
 		prog=${line[1]}
 		camtype=${line[2]}
 		delay=${line[3]}
+        #printf "$tstamp: $(basename $0)[$$]: Delay set to $delay\n" >> $log
 		label=${line[4]}
 		run_once=${line[5]}
 		cpm=${line[6]}
@@ -302,9 +288,11 @@ do
 
 		# If we got here, any leftover lock file has been removed and we now need to [re]start the camera fetch process 
         tstamp=$(date +"%Y%m%d.%H%M%S")
+        #printf "$tstamp: $(basename $0)[$$]: Delay  before exec set to $delay\n" >> $log
 		$epath/$prog $cam $camtype $delay "$label" $run_once $cpm $url & lockpid=$!
 		builtin echo "$lockpid" > "$lockpath/$cam-$camtype.lock"
 		echo "Started  [$lockpid] $epath/$prog $cam $camtype $delay $label $run_once $cpm $url"
+        #printf "$tstamp: $(basename $0)[$$]: Delay  after exec set to $delay\n" >> $log
 		printf "$tstamp: $(basename $0)[$$]: Started [$lockpid] $epath/$prog $cam $camtype $delay $label $run_once $cpm $url\n" >> $log
 		echo "Wrote $lockpid to $lockpath/$cam-$camtype.lock" 
 		#sleep $cam_delay  # Between subsequent cam_params line fetching 
