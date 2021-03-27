@@ -229,14 +229,16 @@ sm-s-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel South, http\://hpwren.ucsd.edu c0"
 sm-s-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel South, http\://hpwren.ucsd.edu c0":0:1:
 sm-w-mobo:getcams-mobo.pl:c:0:"Mt. San Miguel West, http\://hpwren.ucsd.edu c0":0:1:
 sm-w-mobo:getcams-mobo.pl:m:0:"Mt. San Miguel West, http\://hpwren.ucsd.edu c0":0:1:
-so-e-mobo:getcams-mobo.pl:c:0:"Sky Oaks East, http\://hpwren.ucsd.edu c0":0:1:
-so-e-mobo:getcams-mobo.pl:m:0:"Sky Oaks East, http\://hpwren.ucsd.edu c0":0:1:
-so-n-mobo:getcams-mobo.pl:c:0:"Sky Oaks North, http\://hpwren.ucsd.edu c0":0:1:
-so-n-mobo:getcams-mobo.pl:m:0:"Sky Oaks North, http\://hpwren.ucsd.edu c0":0:1:
-so-s-mobo:getcams-mobo.pl:c:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
-so-s-mobo:getcams-mobo.pl:m:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
-so-w-mobo:getcams-mobo.pl:c:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
-so-w-mobo:getcams-mobo.pl:m:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
+sojr-e-mobo:getcams-mobo.pl:c:0:"Sky Oaks East, http\://hpwren.ucsd.edu c0":0:1:
+sojr-e-mobo:getcams-mobo.pl:m:0:"Sky Oaks East, http\://hpwren.ucsd.edu c0":0:1:
+sojr-n-mobo:getcams-mobo.pl:c:0:"Sky Oaks North, http\://hpwren.ucsd.edu c0":0:1:
+sojr-n-mobo:getcams-mobo.pl:m:0:"Sky Oaks North, http\://hpwren.ucsd.edu c0":0:1:
+sojr-s-mobo:getcams-mobo.pl:c:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
+sojr-s-mobo:getcams-mobo.pl:m:0:"Sky Oaks South, http\://hpwren.ucsd.edu c0":0:1:
+sojr-w-mobo:getcams-mobo.pl:c:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
+sojr-w-mobo:getcams-mobo.pl:m:0:"Sky Oaks West, http\://hpwren.ucsd.edu c0":0:1:
+sojr-n-axis:getcams-axis.pl:c:0:"Sky Oaks Axis North, http\://hpwren.ucsd.edu c0":0:1:
+sojr-s-axis:getcams-axis.pl:c:0:"Sky Oaks Axis South, http\://hpwren.ucsd.edu c0":0:1:
 sp-e-axis:getcams-axis.pl:c:0:"Santiago Peak East, http\://hpwren.ucsd.edu c0":0:1:
 sp-e-mobo:getcams-mobo.pl:c:0:"Santiago Peak East, http\://hpwren.ucsd.edu c0":0:1:
 sp-e-mobo:getcams-mobo.pl:m:0:"Santiago Peak East, http\://hpwren.ucsd.edu c0":0:1:
