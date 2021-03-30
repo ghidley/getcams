@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v02142021"
+version="v03292021"
 # File: run_cameras
 
 # Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
@@ -41,12 +41,27 @@ version="v02142021"
 #
 
 # Run as user HPWREN
-HOME="/home/hpwren"
-export HOME
-PATH="$HOME/bin/getcams:$PATH"
-export PATH
+### OLD CODE TO REMOVE ...
+#HOME="/home/hpwren"
+#export HOME
+#PATH="$HOME/bin/getcams:$PATH"
+#export PATH
+#CONFIG_FILE="$HOME/bin/getcams/config_runcam_vars"
 
-CONFIG_FILE="$HOME/bin/getcams/config_runcam_vars"
+tstamp=$(date +"%Y%m%d.%H%M%S")
+
+if [ -n "$RHOME" ];                            # If preset we are container based
+then
+    PATH="$RHOME:$PATH"
+    CONFIG_FILE="$RHOME/config_runcam_vars"
+    printf "\nPreset RHOME = $RHOME config file =  $CONFIG_FILE ... \n"
+else                                         # Otherwise we are server or VM based
+    RHOME="/home/hpwren"
+    PATH="$RHOME/bin/getcams:$PATH"
+    CONFIG_FILE="$RHOME/bin/getcams/config_runcam_vars"
+    printf "\nNot preset RHOME = $RHOME config file =  $CONFIG_FILE ... \n"
+fi
+export PATH;
 
 # Read in configuration file
 if [[ ! -f  $CONFIG_FILE ]] ;
@@ -68,7 +83,6 @@ STOP=false
 
 cam_param_date=$(stat  --printf %Y $params)
 cam_access_date=$(stat --printf %Y $access)
-tstamp=$(date +"%Y%m%d.%H%M%S")
 
 debug_runs=5		# For debug only, run n iterations ...
 rescan_delay=60  # Time between re-reading of cam_param file
@@ -85,7 +99,7 @@ printf "$tstamp: $(basename $0)[$$]: Starting $(basename $0) $* ..." >> $log
 printf "\n" >> $log
 logger -p notice -- "$(basename $0)[$$] was started: $@"
 
-while getopts "vxCdDIPXRS" opt; do
+while getopts "vxdDIPXRS" opt; do
     case "$opt" in
     v) set -v
         ;;

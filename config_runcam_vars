@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-
+# Version 032921 config_runcams_vars 
 # Config getcams variables for run_cameras (bash) 
 
 ### NOTE! This is the run_cameras (aka getcams) config file, 
@@ -12,16 +12,16 @@
 set -a  # export all variables
 
 # Following two variables set in both config_runcams_vars and config_getcams_vars
-HOME="/home/hpwren"
+RHOME="/home/hpwren"
 POSIX=1
 
 S3=0 
 S3CMD="/usr/bin/s3cmd"
-S3CFG="$HOME/.s3cfg-xfer"
+S3CFG="$RHOME/.s3cfg-xfer"
 S3ARGS="-c $S3CFG --no-check-md5 --quiet"
 
-HPATH="$HOME/bin/getcams"
-epath="$HPATH"
+RPATH="$RHOME/bin/getcams"
+epath="$RPATH"
 params="$epath/cam_params"
 access="$epath/cam_access"
 

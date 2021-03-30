@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-axis.pl
 
-$VERS="02212021";
+$VERS="03292021";
 =begin comment
   getcams-axis.pl -- camera image fetch and processing script for axis cameras
   
@@ -42,10 +42,12 @@ use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;
 
+# If RHOME and RPATH are preset, we are running in a container with adjusted paths ...
+unless ( length $RHOME ) { $RHOME = "/home/hpwren"; }
+unless ( length $RPATH ) { $RPATH = "$RHOME/bin/getcams"; }
 
-# Read in getcams variables in file $HOME/bin/getcams/config_getcams_vars  to set common variables
-$HOME   =   "/home/hpwren";
-$cfile   =   "$HOME/bin/getcams/config_getcams_vars";
+# Read in getcams variables in file $RPATH/config_getcams_vars  to set common variables
+$cfile   =   "$RPATH/config_getcams_vars";
 open CONFIG, "$cfile" or die "couldn't open $cfile\n";
 my $config = join "", <CONFIG>;
 close CONFIG;
@@ -56,7 +58,6 @@ my $cmd;
 my $FH ;
 my $timeout = 45;
 
-$HOME="/home/hpwren";
 
 # Passed in from run_cameras export
 $DBG = 0; 
@@ -76,14 +77,14 @@ $S3ARGS = "$ENV{S3ARGS}" ;
 #$POSIX = 1;
 #$S3 = 1;
 #$S3CMD="/usr/bin/s3cmd";
-#$S3CFG="$HOME/.s3cfg-xfer";
+#$S3CFG="$RHOME/.s3cfg-xfer";
 #$S3ARGS="-c $S3CFG --no-check-md5 ";
 
 $|++;  # Flush IO buffer at every print
 
-unless(-e $HPATH or mkdir -p $HPATH) { die "Unable to create $HPATH\n"; }
+unless(-e $RPATH or mkdir -p $RPATH) { die "Unable to create $RPATH\n"; }
 unless(-e $LOGS or mkdir -p $LOGS) { die "Unable to create $LOGS\n"; }
-chdir("$HPATH") or die "cannot change directory: $!\n";
+chdir("$RPATH") or die "cannot change directory: $!\n";
 
 unless(-e $ADIR or mkdir -p $ADIR ) { die "Unable to create $ADIR\n"; }
 unless(-e $CDIR or mkdir -p $CDIR ) { die "Unable to create $CDIR\n"; }
@@ -150,7 +151,7 @@ unless ( $POSIX || $S3 ) {
 }
 
 if ( $S3 ) {
-    unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $HOME\n"; }
+    unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $RHOME\n"; }
 }
 
 #Fetch credentials from access file "cam_access"
@@ -304,7 +305,7 @@ while ( 'true' ) {
                         print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA-640.jpg $CDIR/$CAMERA-640.jpg failed\n";  
                 copy  "$TDIR/$CAMERA/$CAMERA.jpg", "$ADIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg" or 
                     print $FH "$dtstamp: $ID copy $TDIR/$CAMERA/$CAMERA.jpg $ADIR/$CAMERA/large/$dstamp/$APTAG/$time.jpg failed\n"; 
-                system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $CDIR/$CAMERA.jpg");
+                system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $RPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $CDIR/$CAMERA.jpg");
             }
             if ($S3){
                 if ($DBG) { print "\tsystem(\"$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA-175.jpg $TDIR/$CAMERA/$CAMERA-640.jpg s3://latest/\");  \n\t"; }
@@ -320,7 +321,7 @@ while ( 'true' ) {
                 #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://recent/$CAMERA/large/$dstamp/$APTAG/$time.jpg";
                 SystemTimer( $cmd );
-                system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $HPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
+                system("$CONVERT $TDIR/$CAMERA/$CAMERA.jpg $RPATH/hpwren8-400.png -gravity southeast -geometry +70+0 -composite $TDIR/$CAMERA/$CAMERA.jpg");
 
                 #system("$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/");
                 $cmd="$S3CMD $S3ARGS put $TDIR/$CAMERA/$CAMERA.jpg s3://latest/";

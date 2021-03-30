@@ -1,9 +1,9 @@
 # Config getcams variables for getcams*.pl
-#
+# Version 032921 config_getcams_vars
 # Variables for perl getcams fetch libraries
 
 # Following two variables set in both config_runcams_vars and config_getcams_vars
-our $HOME		=	"/home/hpwren";
+our $RHOME		=	"/home/hpwren";
 our $POSIX 		=	 1;
 
 # Program Paths
@@ -20,15 +20,14 @@ our $PPMLABEL	=	"/usr/bin/ppmlabel";
 #our $DBG 		=	 1; 
 #our $S3 		=	 1;
 #our $S3CMD		=	"/usr/bin/s3cmd";
-#our $S3CFG		=	"$HOME/.s3cfg-xfer";
+#our $S3CFG		=	"$RHOME/.s3cfg-xfer";
 #our $S3ARGS		=	"-c $S3CFG --no-check-md5 ";
 
-our $PATH 		=	 "$ENV{PATH}" ;
-our $HPATH		=	"$HOME/bin/getcams";
+our $RPATH		=	"$RHOME/bin/getcams";
 our $LOGS 		=	 "/var/local/hpwren/log";
 
-our $TVS 		=	 "$HPATH/tvpattern-small.jpg";
-our $PW 		=	 "$HPATH/cam_access";  
+our $TVS 		=	 "$RPATH/tvpattern-small.jpg";
+our $PW 		=	 "$RPATH/cam_access";  
 our $ADIR		=	"/Data/archive";                   # Archival image location
 our $TDIR		=	"/Data-local/scratch";             # Temp/local faster location for interim processing
 our $CDIR		=	 "$ADIR/incoming/cameras";         # Current image location (for web page collage)
