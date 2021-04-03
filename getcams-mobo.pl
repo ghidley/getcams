@@ -1,7 +1,9 @@
 #!/usr/bin/perl
 # getcams-mobo.pl
 # 
-$VERS="03292021";
+
+$VERS="04022021";
+
 =begin comment
   getcams-mobo.pl -- camera image fetch and processing script for Mobotix cameras
   
@@ -37,7 +39,7 @@ $VERS="03292021";
 #Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
 
 use File::Basename;
-use Log::Log4perl;
+#use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;

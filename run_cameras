@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v03292021"
+version="v04022021"
 # File: run_cameras
 
 # Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
@@ -54,14 +54,16 @@ if [ -n "$RHOME" ];                            # If preset we are container base
 then
     PATH="$RHOME:$PATH"
     CONFIG_FILE="$RHOME/config_runcam_vars"
-    printf "\nPreset RHOME = $RHOME config file =  $CONFIG_FILE ... \n"
+    #printf "\nPreset RHOME = $RHOME config file =  $CONFIG_FILE ... \n"
 else                                         # Otherwise we are server or VM based
     RHOME="/home/hpwren"
     PATH="$RHOME/bin/getcams:$PATH"
     CONFIG_FILE="$RHOME/bin/getcams/config_runcam_vars"
-    printf "\nNot preset RHOME = $RHOME config file =  $CONFIG_FILE ... \n"
+    #printf "\nNot preset RHOME = $RHOME config file =  $CONFIG_FILE ... \n"
 fi
 export PATH;
+export RHOME;
+export RPATH;
 
 # Read in configuration file
 if [[ ! -f  $CONFIG_FILE ]] ;
