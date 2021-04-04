@@ -45,6 +45,8 @@ use Cwd;
 use Proc::Reliable;
 
 # If RHOME and RPATH are preset, we are running in a container with adjusted paths ...
+$RHOME = "$ENV{RHOME}" ;
+$RPATH = "$ENV{RPATH}" ;
 unless ( length $RHOME ) { $RHOME = "/home/hpwren"; }
 unless ( length $RPATH ) { $RPATH = "$RHOME/bin/getcams"; }
 
