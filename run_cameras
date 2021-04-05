@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v04022021"
+version="v04052021"
 # File: run_cameras
 
 # Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
@@ -78,6 +78,7 @@ source $CONFIG_FILE
 # If needed, create master lockfile directory
 [ -e $lockpath ] || mkdir $lockpath 
 [ -e $logpath ] || mkdir $logpath
+[ -e $TDIR ] || mkdir $TDIR
 
 INITIAL=false
 RESTART=false

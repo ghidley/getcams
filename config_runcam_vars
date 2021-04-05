@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# Version 032921 config_runcams_vars 
+# Version 040521 config_runcams_vars 
 # Config getcams variables for run_cameras (bash) 
 
 ### NOTE! This is the run_cameras (aka getcams) config file, 
@@ -11,8 +11,9 @@
 
 set -a  # export all variables
 
-# Following two variables set in both config_runcams_vars and config_getcams_vars
+# Following three variables set in both config_runcams_vars and config_getcams_vars
 RHOME="/home/hpwren"
+TDIR="/Data-local/scratch"
 POSIX=1
 
 S3=0 

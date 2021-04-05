@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-axis.pl
 
-$VERS="04022021";
+$VERS="04042021*";
 =begin comment
   getcams-axis.pl -- camera image fetch and processing script for axis cameras
   
@@ -47,6 +47,7 @@ $RHOME = "$ENV{RHOME}" ;
 $RPATH = "$ENV{RPATH}" ;
 unless ( length $RHOME ) { $RHOME = "/home/hpwren"; }
 unless ( length $RPATH ) { $RPATH = "$RHOME/bin/getcams"; }
+if ($DBG) { printf "\tgetcams-axis: [$$] RPATH is $RPATH\n" }
 
 # Read in getcams variables in file $RPATH/config_getcams_vars  to set common variables
 $cfile   =   "$RPATH/config_getcams_vars";
