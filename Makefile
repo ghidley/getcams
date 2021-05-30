@@ -86,3 +86,9 @@ cameras:	# Trigger running run_cameras to adjust active camera list
 sync: #sync with c0 camacq1 git master --- run on c5 or other (non c0) remote
 	scp  getcams.service config_getcams_vars config_runcam_vars cleanlogs  getcams*.pl run_cameras Makefile c0:getcams/c5
 
+git_sync: #Add, commit, and push current release
+	git status
+	git add .
+	git commit
+	git push origin master
+
