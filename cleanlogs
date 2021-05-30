@@ -14,7 +14,7 @@ if [[ -e $LOCKDIR/RUNCAM_PID ]] ;
 then
     # Halt getcams system if running
     was_running=1
-    #$GETCAMSDIR/run_cameras -X
+    $GETCAMSDIR/run_cameras -X
 fi
 
 #sleep 5
@@ -28,7 +28,7 @@ done
 if [[ $was_running == 1 ]] ;
 then
     # Restart getcams system
-    #$GETCAMSDIR/run_cameras -I &
+    $GETCAMSDIR/run_cameras -I &
     was_running=0
 fi
 

@@ -50,6 +50,16 @@ bm-w-mobo:getcams-mobo.pl:m:0:"Big Black Mountain West, http\://hpwren.ucsd.edu 
 ch-axis:getcams-axis.pl:c:0:"Coronado Hills, http\://hpwren.ucsd.edu c0":0:1:
 cowles-axis:getcams-axis.pl:c:0:"Cowles Mountain, http\://hpwren.ucsd.edu c0":0:1:
 felicita-axis:getcams-axis.pl:c:0:"Felicita-axis, http\://hpwren.ucsd.edu c0":0:1:
+chino-e-mobo:getcams-mobo.pl:c:0:"Chino Hills East, http\://hpwren.ucsd.edu c0":0:1:
+chino-e-mobo:getcams-mobo.pl:m:0:"Chino Hills East, http\://hpwren.ucsd.edu c0":0:1:
+chino-n-axis:getcams-axis.pl:c:0:"Chino Hills North, http\://hpwren.ucsd.edu c0":0:1:
+chino-n-mobo:getcams-mobo.pl:c:0:"Chino Hills North, http\://hpwren.ucsd.edu c0":0:1:
+chino-n-mobo:getcams-mobo.pl:m:0:"Chino Hills North, http\://hpwren.ucsd.edu c0":0:1:
+chino-s-axis:getcams-axis.pl:c:0:"Chino Hills South, http\://hpwren.ucsd.edu c0":0:1:
+chino-s-mobo:getcams-mobo.pl:c:0:"Chino Hills South, http\://hpwren.ucsd.edu c0":0:1:
+chino-s-mobo:getcams-mobo.pl:m:0:"Chino Hills South, http\://hpwren.ucsd.edu c0":0:1:
+chino-w-mobo:getcams-mobo.pl:c:0:"Chino Hills West, http\://hpwren.ucsd.edu c0":0:1:
+chino-w-mobo:getcams-mobo.pl:m:0:"Chino Hills West, http\://hpwren.ucsd.edu c0":0:1:
 cp-e-mobo:getcams-mobo.pl:c:0:"Cuyamaca Peak East, http\://hpwren.ucsd.edu c0":0:1:
 cp-e-mobo:getcams-mobo.pl:m:0:"Cuyamaca Peak East, http\://hpwren.ucsd.edu c0":0:1:
 cp-n-axis:getcams-axis.pl:c:0:"Cuyamaca Peak North, http\://hpwren.ucsd.edu c0":0:1:
