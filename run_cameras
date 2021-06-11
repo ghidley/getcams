@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v06082021"
+version="v06112021"
 # File: run_cameras
 
 # Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
@@ -41,12 +41,12 @@ version="v06082021"
 #
 
 # Run as user HPWREN
-HOME="/home/hpwren"
-export HOME
-PATH="$HOME/bin/getcams:$PATH"
+RHOME="${RHOME:-/home/hpwren}"
+export RHOME
+PATH="$RHOME/bin/getcams:$PATH"
 export PATH
 
-CONFIG_FILE="$HOME/bin/getcams/config_runcam_vars"
+CONFIG_FILE="$RHOME/bin/getcams/config_runcam_vars"
 
 # Read in configuration file
 if [[ ! -f  $CONFIG_FILE ]] ;

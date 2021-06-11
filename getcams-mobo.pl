@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-mobo.pl
 # 
-$VERS="02142021";
+$VERS="06112021";
 =begin comment
   getcams-mobo.pl -- camera image fetch and processing script for Mobotix cameras
   
@@ -42,9 +42,11 @@ use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;
 
-# Read in getcams variables in file $HOME/bin/getcams/config_getcams_vars  to set common variables
-$HOME   =   "/home/hpwren";
-$cfile   =   "$HOME/bin/getcams/config_getcams_vars";
+# Read in getcams variables in file $RHOME/bin/getcams/config_getcams_vars  to set common variables
+$RHOME   =   "/home/hpwren";
+if(defined $ENV{RHOME}) { $RHOME = "$ENV{RHOME}" ; }
+
+$cfile   =   "$RHOME/bin/getcams/config_getcams_vars";
 open CONFIG, "$cfile" or die "couldn't open $cfile\n";
 my $config = join "", <CONFIG>;
 close CONFIG;
@@ -86,7 +88,7 @@ $S3ARGS = "$ENV{S3ARGS}" ;
 #$POSIX = 1;
 #$S3 = 1;
 #$S3CMD="/usr/bin/s3cmd";
-#$S3CFG="$HOME/.s3cfg-xfer";
+#$S3CFG="$RHOME/.s3cfg-xfer";
 #$S3ARGS="-c $S3CFG --no-check-md5 ";
 
 
@@ -156,7 +158,7 @@ unless ( $POSIX || $S3 ) {
 }
 
 if ( $S3 ) {
-    unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $HOME\n"; }
+    unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $RHOME\n"; }
 }
 
 #Fetch credentials from access file "cam_access"

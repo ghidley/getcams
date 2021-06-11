@@ -42,10 +42,12 @@ use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;
 
+# Read in getcams variables in file $RHOME/bin/getcams/config_getcams_vars  to set common variables
+$RHOME   =   "/home/hpwren";
+if(defined $ENV{RHOME}) { $RHOME = "$ENV{RHOME}" ; }
 
-# Read in getcams variables in file $HOME/bin/getcams/config_getcams_vars  to set common variables
-$HOME   =   "/home/hpwren";
-$cfile   =   "$HOME/bin/getcams/config_getcams_vars";
+$cfile   =   "$RHOME/bin/getcams/config_getcams_vars";
+
 open CONFIG, "$cfile" or die "couldn't open $cfile\n";
 my $config = join "", <CONFIG>;
 close CONFIG;
@@ -55,8 +57,6 @@ die "Couldn't eval your config: $@\n" if $@;
 my $cmd;
 my $FH ;
 my $timeout = 45;
-
-$HOME="/home/hpwren";
 
 # Passed in from run_cameras export
 $DBG = 0; 
@@ -76,7 +76,7 @@ $S3ARGS = "$ENV{S3ARGS}" ;
 #$POSIX = 1;
 #$S3 = 1;
 #$S3CMD="/usr/bin/s3cmd";
-#$S3CFG="$HOME/.s3cfg-xfer";
+#$S3CFG="$RHOME/.s3cfg-xfer";
 #$S3ARGS="-c $S3CFG --no-check-md5 ";
 
 $|++;  # Flush IO buffer at every print
@@ -150,7 +150,7 @@ unless ( $POSIX || $S3 ) {
 }
 
 if ( $S3 ) {
-    unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $HOME\n"; }
+    unless(-e $S3CFG ) { die "Missing S3 Config file $S3CFG in $RHOME\n"; }
 }
 
 #Fetch credentials from access file "cam_access"

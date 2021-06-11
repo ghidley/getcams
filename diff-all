@@ -1,0 +1,6 @@
+#!/bin/bash
+for i in *
+do
+echo diff -w $i ../$i 
+diff -w $i ../$i 
+done
