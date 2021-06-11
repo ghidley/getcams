@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-axis.pl
 
-$VERS="02212021";
+$VERS="06092021";
 =begin comment
   getcams-axis.pl -- camera image fetch and processing script for axis cameras
   
@@ -37,7 +37,7 @@ $VERS="02212021";
 #Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
 
 use File::Basename;
-use Log::Log4perl;
+#use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;

@@ -9,7 +9,7 @@
 ## Once tested, set/update default in run_cameras
 
 #
-ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles Log4perl.conf logfiles Makefile Readme README.md run_cameras tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile .s3cfg-xfer 
+ALLFILES=cam_access cam_access_format cam_params getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl getcams.service lockfiles logfiles Makefile Readme README.md run_cameras tvpattern.jpg tvpattern-small.jpg updateanimations hpwren8-400.png Makefile .s3cfg-xfer 
 RUNFILES=getcams-axis.pl getcams-iqeye.pl getcams-mobo.pl tvpattern-small.jpg run_cameras hpwren8-400.png Makefile cleanlogs config_getcams_vars config_runcam_vars
 ARCHDIR=/Data/archive
 CDIR=$(ARCHDIR)/incoming/cameras
@@ -33,6 +33,11 @@ install:
 	-chmod g+s $(ALLDIRS)
 	cp $(RUNFILES) $(RUNDIR)
 	-chown hpwren:hpwren $(RUNDIR)/*
+
+init:
+	sudo -u hpwren ~hpwren/bin/getcams/run_cameras -X 
+	sudo -u hpwren cp /dev/null /var/local/hpwren/log/runcamlog
+	sudo -b -u hpwren ~hpwren/bin/getcams/run_cameras -I 
 
 test: testd
 testd:
@@ -88,7 +93,11 @@ sync: #sync with c0 camacq1 git master --- run on c5 or other (non c0) remote
 
 git_sync: #Add, commit, and push current release
 	git status
+	@( read -p "add . !? [y/N]: " sure && case "$$sure" in [yY]) true;; *) false;; esac )
 	git add .
+	@( read -p "commit !? [y/N]: " sure && case "$$sure" in [yY]) true;; *) false;; esac )
 	git commit
+	@( read -p "push !? [y/N]: " sure && case "$$sure" in [yY]) true;; *) false;; esac )
 	git push origin master
+	date
 

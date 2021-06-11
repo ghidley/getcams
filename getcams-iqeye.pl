@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # getcams-iqeye.pl
 
-$VERS="02202021";
+$VERS="06092021";
 =begin comment
   getcams-iqeye.pl -- camera image fetch and processing script for iqeye cameras
   Based on getcamsiqeyeanimations6.pl which was crontab driven
@@ -38,7 +38,7 @@ $VERS="02202021";
 #Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
 
 use File::Basename;
-use Log::Log4perl;
+#use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;

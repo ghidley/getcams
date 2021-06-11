@@ -37,7 +37,7 @@ $VERS="02142021";
 #Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
 
 use File::Basename;
-use Log::Log4perl;
+#use Log::Log4perl;
 use File::Copy qw(copy);
 use Cwd;
 use Proc::Reliable;

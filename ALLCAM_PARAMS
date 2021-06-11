@@ -165,6 +165,8 @@ pi-s-mobo:getcams-mobo.pl:m:0:"Los Pinos South, http\://hpwren.ucsd.edu c0":0:1:
 pi-w-mobo:getcams-mobo.pl:c:0:"Los Pinos West, http\://hpwren.ucsd.edu c0":0:1:
 pi-w-mobo:getcams-mobo.pl:m:0:"Los Pinos West, http\://hpwren.ucsd.edu c0":0:1:
 rm-axis:getcams-axis.pl:c:0:"Red Mountain, http\://hpwren.ucsd.edu c0":0:1:
+rm-n-axis:getcams-axis.pl:c:0:"Red Mountain North, http\://hpwren.ucsd.edu c0":0:1:
+rm-s-axis:getcams-axis.pl:c:0:"Red Mountain South, http\://hpwren.ucsd.edu c0":0:1:
 rm-e-mobo:getcams-mobo.pl:c:0:"Red Mountain East, http\://hpwren.ucsd.edu c0":0:1:
 rm-e-mobo:getcams-mobo.pl:m:0:"Red Mountain East, http\://hpwren.ucsd.edu c0":0:1:
 rm-n-mobo:getcams-mobo.pl:c:0:"Red Mountain North, http\://hpwren.ucsd.edu c0":0:1:
