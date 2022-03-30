@@ -18,8 +18,8 @@ then
 fi
 
 #sleep 5
-cp -f  $LOGDIR/*.log  $LOGDIR/runcamlog $LOGDIR/old
-for i in $LOGDIR/*.log
+cp -f  $LOGDIR/*log  $LOGDIR/old
+for i in $LOGDIR/*log
 do
     cp -f /dev/null $i
 done

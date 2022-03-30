@@ -1,5 +1,5 @@
 #!/bin/bash 
-version="v06112021"
+version="v07272021"
 # File: run_cameras
 
 # Variables now set in and accessed from external files config_runcam_vars and config_getcams_vars
@@ -309,8 +309,9 @@ do
         fi
         ### Final check before getcams exec ... can we access the camera?
         if ! error=$(ping -c 1 -W 1 $cam 2>&1 ); then
-            builtin echo "$(basename $0)[$$]: Ping failed: $cam not reachable ... error returned is $error" >> $log
-            logger -p notice -- "$(basename $0)[$pid] Ping failed: $cam not reachable ... error returned is $error"
+			Error=`echo $error | sed 's/%/ percent/g'`
+			printf "$tstamp: $(basename $0)[$$]: Ping failed: $cam not reachable ... error returned is $Error \n" >> $log
+            logger -p notice -- "$(basename $0)[$pid] Ping failed: $cam not reachable ... error returned is $Error"
             sleep $cam_delay 
             continue
         fi

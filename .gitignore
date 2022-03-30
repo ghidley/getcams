@@ -1,5 +1,6 @@
 _MASTER-c0
 .lock
+align2minute.pl
 cam_access
 cam_params-*
 c5/

@@ -85,13 +85,14 @@ enable: getcams.service
 disable: getcams.service 
 	sudo  systemctl disable getcams.service
 
+cams: cameras
 cameras:	# Trigger running run_cameras to adjust active camera list
 	sudo -u hpwren cp $(CONTROLFILES) $(RUNDIR)
 
 sync: #sync with c0 camacq1 git master --- run on c5 or other (non c0) remote
-	scp  getcams.service config_getcams_vars config_runcam_vars cleanlogs  getcams*.pl run_cameras Makefile c0:getcams/c5
+	scp  hosts-c5 getcams.service config_getcams_vars config_runcam_vars cleanlogs  getcams*.pl run_cameras Makefile c0:getcams/c5
 
-git_sync: #Add, commit, and push current release
+git: #Add, commit, and push current release
 	git status
 	@( read -p "add . !? [y/N]: " sure && case "$$sure" in [yY]) true;; *) false;; esac )
 	git add .
